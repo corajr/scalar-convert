@@ -20,6 +20,7 @@ library
                      , Text.Pandoc.Readers.Scalar
   build-depends:       base >= 4.7 && < 5
                      , rdf4h
+                     , text
                      , pandoc
                      , pandoc-types
   default-language:    Haskell2010
@@ -44,6 +45,9 @@ test-suite scalar-export-test
                      , file-embed
                      , hspec
                      , QuickCheck
+  other-modules:     Examples
+                   , Text.Pandoc.Readers.ScalarSpec
+                   , Text.ScalarSpec
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
