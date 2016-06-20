@@ -3,10 +3,10 @@ module Text.ScalarSpec (main, spec) where
 import Test.Hspec
 import Test.QuickCheck
 
-import Debug.Trace (traceShowId)
+import Data.RDF
 import Data.Either (isRight)
 
-import Examples (getExample)
+import Examples (getExample, singlePage)
 
 import Text.Scalar
 
@@ -19,4 +19,7 @@ spec :: Spec
 spec = do
   describe "readScalarString" $ do
     it "parses a Scalar RDF/XML string into in-memory RDF" $
-      readScalarString (getExample "single_page.xml") `shouldSatisfy` isRight
+      readScalarString (getExample "single_page.xml") `shouldSatisfy` (\(Right g) -> isIsomorphic g singlePage)
+  describe "" $ do
+    it "" $
+      pending
