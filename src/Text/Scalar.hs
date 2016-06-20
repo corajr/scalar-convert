@@ -1,3 +1,4 @@
 module Text.Scalar where
 
-scalar = 0
+import Data.RDF
+

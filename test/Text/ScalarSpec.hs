@@ -1,7 +1,12 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Text.ScalarSpec (main, spec) where
 
 import Test.Hspec
 import Test.QuickCheck
+
+import Data.FileEmbed
+import qualified Data.ByteString
 
 import Text.Scalar
 
@@ -10,7 +15,11 @@ import Text.Scalar
 main :: IO ()
 main = hspec spec
 
+examples :: [(FilePath, Data.ByteString.ByteString)]
+examples = $(embedDir "test/examples")
+
 spec :: Spec
 spec = do
-  describe "scalar" $ do
-    pending
+  describe "parseScalarXML" $ do
+    it "parses a Scalar RDF/XML string into in-memory RDF" $
+      pending
