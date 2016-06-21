@@ -8,10 +8,14 @@ module Text.Scalar.Types ( URI
                          , Page(..)
                          , Scalar(..)
                          , ScalarError(..)
+                         , FindPagesBy(..)
+                         , ScalarOptions(..)
                          ) where
 
 import Text.Pandoc.Error (PandocError(..))
 import Data.RDF (ParseFailure)
+
+import Data.Default
 
 import qualified Data.Text as T
 
@@ -33,7 +37,7 @@ data Page = Page
   } deriving (Eq, Show)
 
 data Scalar = Scalar
-  { pages :: [Page]
+  { scalarPages :: [Page]
   } deriving (Eq, Show)
 
 deriving instance Eq PandocError
@@ -42,3 +46,16 @@ data ScalarError = ScalarError String
                  | RdfError ParseFailure
                  | FromPandoc PandocError
                  deriving (Eq, Show)
+
+data FindPagesBy = IndexPath
+                 | Path URI
+                 | GetAll
+                 deriving (Eq, Show)
+
+data ScalarOptions = ScalarOptions
+  { findPagesBy :: FindPagesBy
+  } deriving (Eq, Show)
+
+instance Default ScalarOptions where
+  def = ScalarOptions { findPagesBy = IndexPath
+                      }

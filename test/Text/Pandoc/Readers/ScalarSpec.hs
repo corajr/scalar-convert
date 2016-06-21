@@ -5,7 +5,7 @@ import Test.Hspec
 import Test.QuickCheck
 
 import Text.Scalar (parseScalar)
-import Text.Scalar.Types (Page(..), mkVersionURI)
+import Text.Scalar.Types
 import Text.Pandoc.Readers.Scalar
 
 import Text.Pandoc
@@ -33,7 +33,7 @@ spec = do
       pageToBlocks def page `shouldBe` Right (singlePageTitle : singlePageContentPandoc)
   describe "scalarToPandoc" $ do
     it "takes a 'Scalar' book and returns 'Pandoc'" $ do
-      let scalar = parseScalar singlePage Nothing
+      let scalar = parseScalar singlePage def{findPagesBy = GetAll}
       (scalar >>= scalarToPandoc def) `shouldBe` Right singlePagePandoc
   describe "readScalar" $ do
     it "parses a Scalar RDF/XML string into Right 'Pandoc'" $

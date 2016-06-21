@@ -4,8 +4,8 @@ module Text.ScalarSpec (main, spec) where
 import Test.Hspec
 import Test.QuickCheck
 
+import Data.Default (def)
 import Data.RDF
-import Data.Either (isRight)
 
 import Examples (getExample, singlePage, singlePageContent)
 
@@ -25,4 +25,4 @@ spec = do
       readScalarString (getExample "single_page.xml") `shouldSatisfy` (\(Right g) -> isIsomorphic g singlePage)
   describe "parseScalar" $ do
     it "parses RDF from a simple book into Scalar" $
-      parseScalar singlePage Nothing `shouldBe` Right (Scalar [Page versionURI "Introduction" singlePageContent])
+      parseScalar singlePage def `shouldBe` Right (Scalar [Page versionURI "Introduction" singlePageContent])

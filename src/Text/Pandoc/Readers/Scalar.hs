@@ -20,23 +20,23 @@ import Text.Scalar
 readScalar :: ReaderOptions -- ^ Reader options
            -> String        -- ^ String to parse (assuming @'\n'@ line endings)
            -> Either ScalarError Pandoc
-readScalar opts s = do
+readScalar rOpts s = do
   rdf <- readScalarString s
-  scalar <- parseScalar rdf Nothing
-  scalarToPandoc opts scalar
+  scalar <- parseScalar rdf def
+  scalarToPandoc rOpts scalar
 
 -- | Read Scalar RDF/XML from a file and return a Pandoc document.
-readAndParseScalarFile :: FilePath -> Maybe URI -> IO (Either ScalarError Pandoc)
-readAndParseScalarFile path maybeURI = do
+readAndParseScalarFile :: FilePath -> ScalarOptions -> IO (Either ScalarError Pandoc)
+readAndParseScalarFile path opts = do
   rdf <- readScalarFile path
-  let scalar = parseScalar rdf maybeURI
+  let scalar = parseScalar rdf opts
   case scalar of
     Left err -> return (Left err)
     Right scalar' -> return (scalarToPandoc def scalar')
 
 -- | Convert a 'Scalar' to 'Pandoc', or return the error.
 scalarToPandoc :: ReaderOptions -> Scalar -> Either ScalarError Pandoc
-scalarToPandoc opts (Scalar { pages }) = go (Right (Pandoc nullMeta [])) pages
+scalarToPandoc opts (Scalar { scalarPages = pages }) = go (Right (Pandoc nullMeta [])) pages
   where go err@(Left _) _ = err
         go doc'@(Right (Pandoc _ _)) [] = doc'
         go (Right (Pandoc meta blocks)) (x:xs) = case pageToBlocks opts x of

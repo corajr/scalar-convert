@@ -3,14 +3,17 @@ module Text.Scalar.RDF ( queryPages
                        , versionFromPageURI
                        , queryContent
                        , queryTitle
+                       , findIndex
                        , extractPage
                        , extractPath
                        , extractPagesStartingFrom
+                       , extractPagesStartingFromIndex
                        , extractAllPages
                        , ScalarRDF
                        ) where
 
 import Data.RDF
+import Data.List (find)
 import qualified Data.Text as T
 import Text.Scalar.Types
 
@@ -67,6 +70,14 @@ notFound errMsg maybeA =
 queryPages :: RDF rdf => rdf -> [URI]
 queryPages rdf = map (fromUNode . subject) $ query rdf Nothing (Just rdfType) (Just composite)
 
+-- | Find the index page URI (of the form /index) or return an error.
+findIndex :: RDF rdf => rdf -> Either ScalarError URI
+findIndex rdf = notFound err maybePage
+  where pages = queryPages rdf
+        f x = snd $ T.breakOnEnd "/" x
+        maybePage = find ((== "index") . f) pages
+        err = "Could not find index in " ++ show pages
+
 -- | Get the corresponding live version for each page 'URI'.
 versionFromPageURI :: RDF rdf => rdf -> URI -> Either ScalarError VersionURI
 versionFromPageURI rdf pageURI = notFound err . fmap (mkVersionURI . fromUNode . object) . listToMaybe $ query rdf (Just (UNode pageURI)) (Just version) Nothing
@@ -108,6 +119,10 @@ extractPagesStartingFrom rdf pageURI = do
   versionURI <- versionFromPageURI rdf pageURI
   path <- extractPath rdf versionURI
   mapM (extractPage rdf) path
+
+-- | Attempts to find the index, then grabs all pages along its path.
+extractPagesStartingFromIndex :: RDF rdf => rdf -> Either ScalarError [Page]
+extractPagesStartingFromIndex rdf = findIndex rdf >>= extractPagesStartingFrom rdf
 
 -- | Extract all 'Page's in the RDF store.
 extractAllPages :: RDF rdf => rdf -> Either ScalarError [Page]

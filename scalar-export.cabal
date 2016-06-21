@@ -25,6 +25,7 @@ library
                      , text
                      , containers
                      , optparse-applicative
+                     , data-default
                      , pandoc
                      , pandoc-types
   default-language:    Haskell2010
@@ -50,6 +51,7 @@ test-suite scalar-export-test
                      , containers
                      , text
                      , pandoc-types
+                     , data-default
                      , hspec
                      , QuickCheck
   other-modules:     Examples

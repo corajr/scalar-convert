@@ -34,6 +34,9 @@ spec = do
   describe "queryPages" $ do
     it "finds all page URIs from an RDF graph" $
       queryPages singlePage `shouldBe` [indexURI]
+  describe "findIndex" $ do
+    it "returns the URI of the index" $
+      findIndex singlePage `shouldBe` Right indexURI
   describe "versionFromPageURI" $ do
     it "finds the version URI corresponding to a page" $
       versionFromPageURI singlePage indexURI `shouldBe` Right versionURI

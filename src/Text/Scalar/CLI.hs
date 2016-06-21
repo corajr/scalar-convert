@@ -1,6 +1,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 module Text.Scalar.CLI where
 
+import Text.Scalar
 import Text.Pandoc.Options
 import Text.Pandoc.Readers.Scalar
 import Text.Pandoc.Writers.Native
@@ -20,7 +21,10 @@ cliArgs = CliArgs
 
 run :: CliArgs -> IO ()
 run (CliArgs {input, maybeURI}) = do
-  pandoc <- readAndParseScalarFile input (fmap T.pack maybeURI)
+  let findBy = case maybeURI of
+        Just uri -> Path $ T.pack uri
+        Nothing -> IndexPath
+  pandoc <- readAndParseScalarFile input def{findPagesBy = findBy}
   case pandoc of
     Left err -> print err
     Right doc -> putStr $ writeNative def doc
