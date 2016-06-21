@@ -1,4 +1,3 @@
-{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Text.Pandoc.Readers.ScalarSpec (main, spec) where
 
@@ -15,8 +14,6 @@ import Text.Pandoc.Error
 import Data.Either (isRight)
 
 import Examples (getExample, singlePage, singlePageContent, singlePageContentPandoc)
-
-deriving instance Eq PandocError
 
 -- `main` is here so that this module can be run from GHCi on its own.  It is
 -- not needed for automatic spec discovery.
@@ -35,8 +32,9 @@ spec = do
     it "takes a 'Page' and returns Right '[Block]'" $
       pageToBlocks def page `shouldBe` Right singlePageContentPandoc
   describe "scalarToPandoc" $ do
-    it "takes a 'Scalar' book and returns 'Pandoc'" $
-      scalarToPandoc def (parseScalar singlePage Nothing) `shouldBe` Right singlePagePandoc
+    it "takes a 'Scalar' book and returns 'Pandoc'" $ do
+      let scalar = parseScalar singlePage Nothing
+      (scalar >>= scalarToPandoc def) `shouldBe` Right singlePagePandoc
   describe "readScalar" $ do
     it "parses a Scalar RDF/XML string into Right 'Pandoc'" $
       readScalar def (getExample "single_page.xml") `shouldBe` Right singlePagePandoc

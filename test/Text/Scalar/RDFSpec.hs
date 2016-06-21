@@ -36,14 +36,16 @@ spec = do
       queryPages singlePage `shouldBe` [indexURI]
   describe "versionFromPageURI" $ do
     it "finds the version URI corresponding to a page" $
-      versionFromPageURI singlePage indexURI `shouldBe` versionURI
+      versionFromPageURI singlePage indexURI `shouldBe` Right versionURI
   describe "extractPage" $ do
     it "extracts a page and its contents from the RDF store" $
-      extractPage singlePage versionURI `shouldBe` Page versionURI singlePageContent
-  let fullBook = fromEither $ readScalarString (getExample "full_book.xml")
+      extractPage singlePage versionURI `shouldBe` Right (Page versionURI singlePageContent)
+  let fullBook = case readScalarString (getExample "full_book.xml") of
+        Left err -> error (show err)
+        Right x -> x
   describe "extractPath" $ do
     it "gathers all the pages along a path" $
-      extractPath fullBook fullBookVersionURI `shouldBe` [fullBookVersionURI, page2URI, page3URI]
+      extractPath fullBook fullBookVersionURI `shouldBe` Right [fullBookVersionURI, page2URI, page3URI]
   describe "extractPagesStartingFrom" $ do
     it "gathers pages starting from the specified URI" $
-      map pageVersionURI (extractPagesStartingFrom fullBook indexURI) `shouldBe` [fullBookVersionURI, page2URI, page3URI]
+      fmap (map pageVersionURI) (extractPagesStartingFrom fullBook indexURI) `shouldBe` Right [fullBookVersionURI, page2URI, page3URI]

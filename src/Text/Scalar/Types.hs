@@ -1,3 +1,4 @@
+{-# LANGUAGE StandaloneDeriving #-}
 module Text.Scalar.Types ( URI
                          , VersionURI
                          , unVersionURI
@@ -5,7 +6,11 @@ module Text.Scalar.Types ( URI
                          , Path
                          , Page(..)
                          , Scalar(..)
+                         , ScalarError(..)
                          ) where
+
+import Text.Pandoc.Error (PandocError(..))
+import Data.RDF (ParseFailure)
 
 import qualified Data.Text as T
 
@@ -27,3 +32,10 @@ data Page = Page
 data Scalar = Scalar
   { pages :: [Page]
   } deriving (Eq, Show)
+
+deriving instance Eq PandocError
+
+data ScalarError = ScalarError String
+                 | RdfError ParseFailure
+                 | FromPandoc PandocError
+                 deriving (Eq, Show)
