@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:scalar="http://scalar.usc.edu/2012/01/scalar-ns#"
+  xmlns:prov="http://www.w3.org/ns/prov#"
+  xmlns:dcterms="http://purl.org/dc/terms/"
+  xmlns:ov="http://open.vocab.org/terms/"
+  xmlns:sioc="http://rdfs.org/sioc/ns#"
+  xmlns:oac="http://www.openannotation.org/ns/"
+  xmlns:art="http://simile.mit.edu/2003/10/ontologies/artstor#">
+
+  <rdf:Description rdf:about="http://scalar.usc.edu/works/scalar-export-test/annotations-on-media">
+    <rdf:type rdf:resource="http://scalar.usc.edu/2012/01/scalar-ns#Composite"/>
+    <scalar:isLive>1</scalar:isLive>
+    <prov:wasAttributedTo rdf:resource="http://scalar.usc.edu/works/scalar-export-test/users/11802"/>
+    <dcterms:created>2016-06-20T18:07:01-07:00</dcterms:created>
+    <scalar:urn rdf:resource="urn:scalar:content:297618"/>
+    <scalar:version rdf:resource="http://scalar.usc.edu/works/scalar-export-test/annotations-on-media.1"/>
+    <dcterms:hasVersion rdf:resource="http://scalar.usc.edu/works/scalar-export-test/annotations-on-media.1"/>
+    <scalar:citation>method=instancesof/content;methodNumNodes=6;</scalar:citation>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://scalar.usc.edu/works/scalar-export-test/annotations-on-media.1">
+    <ov:versionnumber>1</ov:versionnumber>
+    <dcterms:title>Annotations on media</dcterms:title>
+    <sioc:content>Annotations can be assigned to a particular point in time, like this.</sioc:content>
+    <scalar:defaultView>plain</scalar:defaultView>
+    <prov:wasAttributedTo rdf:resource="http://scalar.usc.edu/works/scalar-export-test/users/11802"/>
+    <dcterms:created>2016-06-20T18:07:01-07:00</dcterms:created>
+    <scalar:urn rdf:resource="urn:scalar:version:791662"/>
+    <dcterms:isVersionOf rdf:resource="http://scalar.usc.edu/works/scalar-export-test/annotations-on-media"/>
+    <rdf:type rdf:resource="http://scalar.usc.edu/2012/01/scalar-ns#Version"/>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="urn:scalar:anno:791662:791658">
+    <scalar:urn rdf:resource="urn:scalar:anno:791662:791658"/>
+    <oac:hasBody rdf:resource="http://scalar.usc.edu/works/scalar-export-test/annotations-on-media.1"/>
+    <oac:hasTarget rdf:resource="http://scalar.usc.edu/works/scalar-export-test/scalar-guided-tour.1#t=npt:120,125"/>
+    <rdf:type rdf:resource="http://www.openannotation.org/ns/Annotation"/>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://scalar.usc.edu/works/scalar-export-test/scalar-guided-tour">
+    <rdf:type rdf:resource="http://scalar.usc.edu/2012/01/scalar-ns#Media"/>
+    <scalar:isLive>1</scalar:isLive>
+    <prov:wasAttributedTo rdf:resource="http://scalar.usc.edu/works/scalar-export-test/users/11802"/>
+    <dcterms:created>2016-06-20T17:59:17-07:00</dcterms:created>
+    <scalar:urn rdf:resource="urn:scalar:content:297617"/>
+    <scalar:version rdf:resource="http://scalar.usc.edu/works/scalar-export-test/scalar-guided-tour.1"/>
+    <dcterms:hasVersion rdf:resource="http://scalar.usc.edu/works/scalar-export-test/scalar-guided-tour.1"/>
+    <scalar:citation>method=instancesof/content;methodNumNodes=6;</scalar:citation>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://scalar.usc.edu/works/scalar-export-test/scalar-guided-tour.1">
+    <ov:versionnumber>1</ov:versionnumber>
+    <dcterms:title>Scalar Guided Tour</dcterms:title>
+    <art:url rdf:resource="https://vimeo.com/40487010"/>
+    <scalar:defaultView>plain</scalar:defaultView>
+    <prov:wasAttributedTo rdf:resource="http://scalar.usc.edu/works/scalar-export-test/users/11802"/>
+    <dcterms:created>2016-06-20T17:59:17-07:00</dcterms:created>
+    <scalar:urn rdf:resource="urn:scalar:version:791658"/>
+    <dcterms:isVersionOf rdf:resource="http://scalar.usc.edu/works/scalar-export-test/scalar-guided-tour"/>
+    <dcterms:isReferencedBy rdf:resource="http://scalar.usc.edu/works/scalar-export-test/notes-and-media"/>
+    <rdf:type rdf:resource="http://scalar.usc.edu/2012/01/scalar-ns#Version"/>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://scalar.usc.edu/works/scalar-export-test/following-a-path">
+    <rdf:type rdf:resource="http://scalar.usc.edu/2012/01/scalar-ns#Composite"/>
+    <scalar:isLive>1</scalar:isLive>
+    <prov:wasAttributedTo rdf:resource="http://scalar.usc.edu/works/scalar-export-test/users/11802"/>
+    <dcterms:created>2016-06-20T17:47:58-07:00</dcterms:created>
+    <scalar:urn rdf:resource="urn:scalar:content:297613"/>
+    <scalar:version rdf:resource="http://scalar.usc.edu/works/scalar-export-test/following-a-path.1"/>
+    <dcterms:hasVersion rdf:resource="http://scalar.usc.edu/works/scalar-export-test/following-a-path.1"/>
+    <scalar:citation>method=instancesof/content;methodNumNodes=6;</scalar:citation>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://scalar.usc.edu/works/scalar-export-test/following-a-path.1">
+    <ov:versionnumber>1</ov:versionnumber>
+    <dcterms:title>Following a Path</dcterms:title>
+    <sioc:content>&lt;a href=&quot;https://github.com/corajr/scalar-export&quot;&gt;scalar-export&lt;/a&gt; is also capable of following a path to capture a series of pages.</sioc:content>
+    <scalar:defaultView>plain</scalar:defaultView>
+    <prov:wasAttributedTo rdf:resource="http://scalar.usc.edu/works/scalar-export-test/users/11802"/>
+    <dcterms:created>2016-06-20T17:47:58-07:00</dcterms:created>
+    <scalar:urn rdf:resource="urn:scalar:version:791649"/>
+    <dcterms:isVersionOf rdf:resource="http://scalar.usc.edu/works/scalar-export-test/following-a-path"/>
+    <rdf:type rdf:resource="http://scalar.usc.edu/2012/01/scalar-ns#Version"/>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://scalar.usc.edu/works/scalar-export-test/index">
+    <rdf:type rdf:resource="http://scalar.usc.edu/2012/01/scalar-ns#Composite"/>
+    <scalar:isLive>1</scalar:isLive>
+    <prov:wasAttributedTo rdf:resource="http://scalar.usc.edu/works/scalar-export-test/users/11802"/>
+    <dcterms:created>2016-06-20T12:41:52-07:00</dcterms:created>
+    <scalar:urn rdf:resource="urn:scalar:content:297474"/>
+    <scalar:version rdf:resource="http://scalar.usc.edu/works/scalar-export-test/index.4"/>
+    <dcterms:hasVersion rdf:resource="http://scalar.usc.edu/works/scalar-export-test/index.4"/>
+    <scalar:citation>method=instancesof/content;methodNumNodes=6;</scalar:citation>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://scalar.usc.edu/works/scalar-export-test/index.4">
+    <ov:versionnumber>4</ov:versionnumber>
+    <dcterms:title>Introduction</dcterms:title>
+    <sioc:content>This is a test book for the &lt;a href=&quot;https://github.com/corajr/scalar-export&quot;&gt;scalar-export&lt;/a&gt;&amp;nbsp;package. It contains different formatting, such as &lt;strong&gt;bold&lt;/strong&gt; and&amp;nbsp;&lt;em&gt;italics&lt;/em&gt;. It has multiple versions of certain documents, to ensure that the latest version is used in the output.</sioc:content>
+    <scalar:defaultView>plain</scalar:defaultView>
+    <prov:wasAttributedTo rdf:resource="http://scalar.usc.edu/works/scalar-export-test/users/11802"/>
+    <dcterms:created>2016-06-20T18:01:38-07:00</dcterms:created>
+    <scalar:urn rdf:resource="urn:scalar:version:791661"/>
+    <dcterms:isVersionOf rdf:resource="http://scalar.usc.edu/works/scalar-export-test/index"/>
+    <rdf:type rdf:resource="http://scalar.usc.edu/2012/01/scalar-ns#Version"/>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="urn:scalar:path:791661:791649">
+    <scalar:urn rdf:resource="urn:scalar:path:791661:791649"/>
+    <oac:hasBody rdf:resource="http://scalar.usc.edu/works/scalar-export-test/index.4"/>
+    <oac:hasTarget rdf:resource="http://scalar.usc.edu/works/scalar-export-test/following-a-path.1#index=1"/>
+    <rdf:type rdf:resource="http://www.openannotation.org/ns/Annotation"/>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="urn:scalar:path:791661:791666">
+    <scalar:urn rdf:resource="urn:scalar:path:791661:791666"/>
+    <oac:hasBody rdf:resource="http://scalar.usc.edu/works/scalar-export-test/index.4"/>
+    <oac:hasTarget rdf:resource="http://scalar.usc.edu/works/scalar-export-test/notes-and-media.2#index=2"/>
+    <rdf:type rdf:resource="http://www.openannotation.org/ns/Annotation"/>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://scalar.usc.edu/works/scalar-export-test/notes-and-media">
+    <rdf:type rdf:resource="http://scalar.usc.edu/2012/01/scalar-ns#Composite"/>
+    <scalar:isLive>1</scalar:isLive>
+    <prov:wasAttributedTo rdf:resource="http://scalar.usc.edu/works/scalar-export-test/users/11802"/>
+    <dcterms:created>2016-06-20T17:55:33-07:00</dcterms:created>
+    <scalar:urn rdf:resource="urn:scalar:content:297616"/>
+    <scalar:version rdf:resource="http://scalar.usc.edu/works/scalar-export-test/notes-and-media.2"/>
+    <dcterms:hasVersion rdf:resource="http://scalar.usc.edu/works/scalar-export-test/notes-and-media.2"/>
+    <scalar:citation>method=instancesof/content;methodNumNodes=6;</scalar:citation>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://scalar.usc.edu/works/scalar-export-test/notes-and-media.2">
+    <ov:versionnumber>2</ov:versionnumber>
+    <dcterms:title>Notes and Media</dcterms:title>
+    <sioc:content>Scalar permits &lt;span class=&quot;note&quot; rev=&quot;scalar:has_note&quot; resource=&quot;note-on-notes&quot;&gt;notes&lt;/span&gt;&amp;nbsp;to exist on pages. It also allows for media to be included, either as &lt;a resource=&quot;scalar-guided-tour&quot; data-size=&quot;small&quot; data-align=&quot;right&quot; data-caption=&quot;title&quot; href=&quot;https://vimeo.com/40487010&quot;&gt;links&lt;/a&gt;&amp;nbsp;or as inline content:&lt;br /&gt;&lt;br /&gt;&lt;a class=&quot;inline&quot; resource=&quot;scalar-guided-tour&quot; data-size=&quot;small&quot; data-align=&quot;left&quot; data-caption=&quot;description&quot; name=&quot;scalar-inline-media&quot; href=&quot;https://vimeo.com/40487010&quot;&gt;&lt;/a&gt;&lt;br /&gt;Similarly, annotations can be &lt;a resource=&quot;scalar-guided-tour&quot; data-size=&quot;small&quot; data-align=&quot;right&quot; data-caption=&quot;title-and-description&quot; href=&quot;https://vimeo.com/40487010#annotations-on-media&quot;&gt;linked&lt;/a&gt;&amp;nbsp;or displayed inline:&lt;br /&gt;&lt;br /&gt;&lt;a class=&quot;inline&quot; resource=&quot;scalar-guided-tour&quot; data-size=&quot;small&quot; data-align=&quot;left&quot; data-caption=&quot;none&quot; name=&quot;scalar-inline-annotation&quot; href=&quot;https://vimeo.com/40487010#annotations-on-media&quot;&gt;&lt;/a&gt;</sioc:content>
+    <scalar:defaultView>plain</scalar:defaultView>
+    <prov:wasAttributedTo rdf:resource="http://scalar.usc.edu/works/scalar-export-test/users/11802"/>
+    <dcterms:created>2016-06-20T18:09:22-07:00</dcterms:created>
+    <scalar:urn rdf:resource="urn:scalar:version:791666"/>
+    <dcterms:isVersionOf rdf:resource="http://scalar.usc.edu/works/scalar-export-test/notes-and-media"/>
+    <dcterms:references rdf:resource="http://scalar.usc.edu/works/scalar-export-test/scalar-guided-tour"/>
+    <rdf:type rdf:resource="http://scalar.usc.edu/2012/01/scalar-ns#Version"/>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://scalar.usc.edu/works/scalar-export-test/note-on-notes">
+    <rdf:type rdf:resource="http://scalar.usc.edu/2012/01/scalar-ns#Composite"/>
+    <scalar:isLive>1</scalar:isLive>
+    <prov:wasAttributedTo rdf:resource="http://scalar.usc.edu/works/scalar-export-test/users/11802"/>
+    <dcterms:created>2016-06-20T17:55:08-07:00</dcterms:created>
+    <scalar:urn rdf:resource="urn:scalar:content:297615"/>
+    <scalar:version rdf:resource="http://scalar.usc.edu/works/scalar-export-test/note-on-notes.1"/>
+    <dcterms:hasVersion rdf:resource="http://scalar.usc.edu/works/scalar-export-test/note-on-notes.1"/>
+    <scalar:citation>method=instancesof/content;methodNumNodes=6;</scalar:citation>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://scalar.usc.edu/works/scalar-export-test/note-on-notes.1">
+    <ov:versionnumber>1</ov:versionnumber>
+    <dcterms:title>Note on notes</dcterms:title>
+    <sioc:content>Notes such as this one are shown as popovers in Scalar, and could be rendered as footnotes in scalar-export output.</sioc:content>
+    <scalar:defaultView>plain</scalar:defaultView>
+    <prov:wasAttributedTo rdf:resource="http://scalar.usc.edu/works/scalar-export-test/users/11802"/>
+    <dcterms:created>2016-06-20T17:55:08-07:00</dcterms:created>
+    <scalar:urn rdf:resource="urn:scalar:version:791655"/>
+    <dcterms:isVersionOf rdf:resource="http://scalar.usc.edu/works/scalar-export-test/note-on-notes"/>
+    <rdf:type rdf:resource="http://scalar.usc.edu/2012/01/scalar-ns#Version"/>
+  </rdf:Description>
+
+</rdf:RDF>
