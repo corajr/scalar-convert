@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:scalar="http://scalar.usc.edu/2012/01/scalar-ns#"
+  xmlns:prov="http://www.w3.org/ns/prov#"
+  xmlns:dcterms="http://purl.org/dc/terms/"
+  xmlns:ov="http://open.vocab.org/terms/"
+  xmlns:sioc="http://rdfs.org/sioc/ns#">
+
+  <rdf:Description rdf:about="http://scalar.usc.edu/works/scalar-export-test/index">
+    <rdf:type rdf:resource="http://scalar.usc.edu/2012/01/scalar-ns#Composite"/>
+    <scalar:isLive>1</scalar:isLive>
+    <prov:wasAttributedTo rdf:resource="http://scalar.usc.edu/works/scalar-export-test/users/11802"/>
+    <dcterms:created>2016-06-20T12:41:52-07:00</dcterms:created>
+    <scalar:urn rdf:resource="urn:scalar:content:297474"/>
+    <scalar:version rdf:resource="http://scalar.usc.edu/works/scalar-export-test/index.1"/>
+    <dcterms:hasVersion rdf:resource="http://scalar.usc.edu/works/scalar-export-test/index.1"/>
+    <scalar:citation>method=instancesof/content;methodNumNodes=1;</scalar:citation>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://scalar.usc.edu/works/scalar-export-test/index.1">
+    <ov:versionnumber>1</ov:versionnumber>
+    <dcterms:title>Introduction</dcterms:title>
+    <sioc:content>This is a test book for the &lt;a href=&quot;https://github.com/corajr/scalar-export&quot;&gt;scalar-export&lt;/a&gt;&amp;nbsp;package. It contains different formatting, such as &lt;strong&gt;bold&lt;/strong&gt; and&amp;nbsp;&lt;em&gt;italics&lt;/em&gt;.</sioc:content>
+    <scalar:defaultView>plain</scalar:defaultView>
+    <prov:wasAttributedTo rdf:resource="http://scalar.usc.edu/works/scalar-export-test/users/11802"/>
+    <dcterms:created>2016-06-20T12:41:52-07:00</dcterms:created>
+    <scalar:urn rdf:resource="urn:scalar:version:791282"/>
+    <dcterms:isVersionOf rdf:resource="http://scalar.usc.edu/works/scalar-export-test/index"/>
+    <rdf:type rdf:resource="http://scalar.usc.edu/2012/01/scalar-ns#Version"/>
+  </rdf:Description>
+
+</rdf:RDF>

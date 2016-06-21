@@ -1,6 +1,6 @@
 module Main where
 
-import Data.String.Strip
+import qualified Text.Scalar.CLI as CLI
 
 main :: IO ()
-main = interact strip
+main = CLI.main

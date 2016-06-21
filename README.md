@@ -6,4 +6,4 @@ using [pandoc](http://pandoc.org/).
 
 ## Usage
 
-`scalar-export -i content.xml -o content.html`
+`scalar-export content.xml | pandoc -f native -o output.html`
