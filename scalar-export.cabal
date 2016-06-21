@@ -1,5 +1,5 @@
 name:                scalar-export
-version:             0.1.0.0
+version:             0.1.0
 synopsis:            Parser for ANVC Scalar's RDF/XML, with export via Pandoc
 description:         Please see README.md
 homepage:            https://github.com/corajr/scalar-export#readme
