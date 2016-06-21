@@ -1,4 +1,5 @@
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Text.Scalar.Types ( URI
                          , VersionURI
                          , unVersionURI
@@ -20,7 +21,8 @@ newtype VersionURI = VersionURI { unVersionURI :: URI }
   deriving (Eq, Show)
 
 mkVersionURI :: URI -> VersionURI
-mkVersionURI = VersionURI
+mkVersionURI uri = VersionURI preFragment
+  where preFragment = T.takeWhile (/= '#') uri
 
 type Path = [VersionURI]
 
