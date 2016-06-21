@@ -1,4 +1,8 @@
-module Text.Scalar where
+module Text.Scalar ( module Text.Scalar.Types
+                   , readScalarString
+                   , readScalarFile
+                   , parseScalar
+                   ) where
 
 import Data.RDF
 import qualified Data.Text as T
@@ -13,3 +17,7 @@ readScalarString = parseString (XmlParser Nothing Nothing) . T.pack
 {-| Reads a Scalar RDF/XML file into in-memory RDF. -}
 readScalarFile :: String -> IO ScalarRDF
 readScalarFile = fmap fromEither . parseFile (XmlParser Nothing Nothing)
+
+{-| Parses the RDF into a 'Scalar' (a list of 'Page's and some contextual information). -}
+parseScalar :: RDF rdf => rdf -> Scalar
+parseScalar = Scalar . extractAllPages

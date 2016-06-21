@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Text.Scalar.RDFSpec where
+module Text.Scalar.RDFSpec (main, spec, versionURI) where
 
 import Test.Hspec
 

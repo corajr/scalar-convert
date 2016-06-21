@@ -3,6 +3,7 @@ module Text.Scalar.RDF ( queryPages
                        , versionFromPageURI
                        , queryContent
                        , extractPage
+                       , extractAllPages
                        , ScalarRDF
                        ) where
 
@@ -48,5 +49,8 @@ queryContent :: RDF rdf => rdf -> VersionURI -> T.Text
 queryContent rdf vUri = fromLNode . object . head $ query rdf (Just (UNode (unVersionURI vUri))) (Just content) Nothing
 
 extractPage :: RDF rdf => rdf -> VersionURI -> Page
-extractPage rdf versionURI = Page versionURI content
-  where content = queryContent rdf versionURI
+extractPage rdf versionURI = Page versionURI body
+  where body = queryContent rdf versionURI
+
+extractAllPages :: RDF rdf => rdf -> [Page]
+extractAllPages rdf = map (extractPage rdf . versionFromPageURI rdf) $ queryPages rdf
