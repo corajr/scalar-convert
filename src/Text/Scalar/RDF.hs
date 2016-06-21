@@ -39,18 +39,23 @@ composite = UNode "http://scalar.usc.edu/2012/01/scalar-ns#Composite"
 content :: Node
 content = UNode "sioc:content"
 
+-- | Find all page URIs in 'RDF'.
 queryPages :: RDF rdf => rdf -> [URI]
 queryPages rdf = map (fromUNode . subject) $ query rdf Nothing (Just rdfType) (Just composite)
 
+-- | Get the corresponding live version for each page 'URI'.
 versionFromPageURI :: RDF rdf => rdf -> URI -> VersionURI
 versionFromPageURI rdf pageURI = mkVersionURI . fromUNode . object . head $ query rdf (Just (UNode pageURI)) (Just version) Nothing
 
+-- | Extract the content from a version.
 queryContent :: RDF rdf => rdf -> VersionURI -> T.Text
 queryContent rdf vUri = fromLNode . object . head $ query rdf (Just (UNode (unVersionURI vUri))) (Just content) Nothing
 
+-- | Extract a full 'Page' given the version 'URI'.
 extractPage :: RDF rdf => rdf -> VersionURI -> Page
 extractPage rdf versionURI = Page versionURI body
   where body = queryContent rdf versionURI
 
+-- | Extract all 'Page's in the RDF store.
 extractAllPages :: RDF rdf => rdf -> [Page]
 extractAllPages rdf = map (extractPage rdf . versionFromPageURI rdf) $ queryPages rdf
