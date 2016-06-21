@@ -44,3 +44,6 @@ spec = do
   describe "extractPath" $ do
     it "gathers all the pages along a path" $
       extractPath fullBook fullBookVersionURI `shouldBe` [fullBookVersionURI, page2URI, page3URI]
+  describe "extractPagesStartingFrom" $ do
+    it "gathers pages starting from the specified URI" $
+      map pageVersionURI (extractPagesStartingFrom fullBook indexURI) `shouldBe` [fullBookVersionURI, page2URI, page3URI]

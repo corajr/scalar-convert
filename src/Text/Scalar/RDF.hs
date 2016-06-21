@@ -4,7 +4,7 @@ module Text.Scalar.RDF ( queryPages
                        , queryContent
                        , extractPage
                        , extractPath
-                       , extractPagesOnPath
+                       , extractPagesStartingFrom
                        , extractAllPages
                        , ScalarRDF
                        ) where
@@ -72,9 +72,11 @@ extractPath rdf versionURI = versionURI : pathTargets
         getTargets resource = map (mkVersionURI . fromUNode . object) $ query rdf (Just resource) (Just pathHasTarget) Nothing
         pathTargets = concatMap getTargets pathResources
 
--- | Extract the 'Page's along a 'Path'.
-extractPagesOnPath :: RDF rdf => rdf -> Path -> [Page]
-extractPagesOnPath rdf = map (extractPage rdf)
+-- | Finds the 'VersionURI' of the given page, then grabs all pages along its path.
+extractPagesStartingFrom :: RDF rdf => rdf -> URI -> [Page]
+extractPagesStartingFrom rdf pageURI = map (extractPage rdf) path
+  where versionURI = versionFromPageURI rdf pageURI
+        path = extractPath rdf versionURI
 
 -- | Extract all 'Page's in the RDF store.
 extractAllPages :: RDF rdf => rdf -> [Page]

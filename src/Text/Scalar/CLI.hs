@@ -4,18 +4,23 @@ module Text.Scalar.CLI where
 import Text.Pandoc.Options
 import Text.Pandoc.Readers.Scalar
 import Text.Pandoc.Writers.Native
+
+import qualified Data.Text as T
 import Options.Applicative
 
 data CliArgs = CliArgs
-  { input :: FilePath }
+  { input :: FilePath
+  , maybeURI :: Maybe String
+  }
 
 cliArgs :: Parser CliArgs
 cliArgs = CliArgs
   <$> argument str (metavar "INPUT")
+  <*> (optional $ argument str (metavar "STARTURI"))
 
 run :: CliArgs -> IO ()
-run (CliArgs {input}) = do
-  pandoc <- readAndParseScalarFile input
+run (CliArgs {input, maybeURI}) = do
+  pandoc <- readAndParseScalarFile input (fmap T.pack maybeURI)
   case pandoc of
     Left err -> print err
     Right doc -> putStr $ writeNative def doc
