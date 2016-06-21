@@ -17,6 +17,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Text.Scalar
                      , Text.Scalar.CLI
+                     , Text.Scalar.RDF
                      , Text.Pandoc.Readers.Scalar
   build-depends:       base >= 4.7 && < 5
                      , rdf4h
@@ -45,6 +46,7 @@ test-suite scalar-export-test
                      , bytestring
                      , file-embed
                      , containers
+                     , text
                      , hspec
                      , QuickCheck
   other-modules:     Examples
