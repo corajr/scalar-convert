@@ -9,6 +9,7 @@ import qualified Data.Map as Map
 import qualified Data.Text as T
 import Data.FileEmbed
 import qualified Data.ByteString.Char8 as BS
+import Text.Pandoc.Definition
 
 examples :: [(FilePath, BS.ByteString)]
 examples = $(embedDir "test/examples")
@@ -48,3 +49,5 @@ singlePage = mkRdf triples baseurl prefixes
 singlePageContent :: T.Text
 singlePageContent = "This is a test book for the <a href=\"https://github.com/corajr/scalar-export\">scalar-export</a>&nbsp;package. It contains different formatting, such as <strong>bold</strong> and&nbsp;<em>italics</em>."
 
+singlePageContentPandoc :: [Block]
+singlePageContentPandoc = [Plain [Str "This",Space,Str "is",Space,Str "a",Space,Str "test",Space,Str "book",Space,Str "for",Space,Str "the",Space,Link ("",[],[]) [Str "scalar-export"] ("https://github.com/corajr/scalar-export",""),Str "\160package.",Space,Str "It",Space,Str "contains",Space,Str "different",Space,Str "formatting,",Space,Str "such",Space,Str "as",Space,Strong [Str "bold"],Space,Str "and\160",Emph [Str "italics"],Str "."]]
