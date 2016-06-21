@@ -18,6 +18,10 @@ readScalarString = parseString (XmlParser Nothing Nothing) . T.pack
 readScalarFile :: String -> IO ScalarRDF
 readScalarFile = fmap fromEither . parseFile (XmlParser Nothing Nothing)
 
--- | Parses the RDF into a 'Scalar' (a list of 'Page's and some contextual information).
-parseScalar :: RDF rdf => rdf -> Scalar
-parseScalar = Scalar . extractAllPages
+-- | Parses the RDF into a 'Scalar' (a list of 'Page's and (eventually) some contextual information).
+-- Will attempt to extract pages along a path starting from the provided URI, or all pages if no path is given.
+parseScalar :: RDF rdf => rdf -> Maybe URI -> Scalar
+parseScalar rdf maybeURI =
+  case maybeURI of
+    Just pageURI -> Scalar $ extractPagesStartingFrom rdf pageURI
+    Nothing -> Scalar $ extractAllPages rdf

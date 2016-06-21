@@ -36,7 +36,7 @@ spec = do
       pageToBlocks def page `shouldBe` Right singlePageContentPandoc
   describe "scalarToPandoc" $ do
     it "takes a 'Scalar' book and returns 'Pandoc'" $
-      scalarToPandoc def (parseScalar singlePage) `shouldBe` Right singlePagePandoc
+      scalarToPandoc def (parseScalar singlePage Nothing) `shouldBe` Right singlePagePandoc
   describe "readScalar" $ do
     it "parses a Scalar RDF/XML string into Right 'Pandoc'" $
       readScalar def (getExample "single_page.xml") `shouldBe` Right singlePagePandoc

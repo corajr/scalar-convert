@@ -2,6 +2,7 @@ module Text.Scalar.Types ( URI
                          , VersionURI
                          , unVersionURI
                          , mkVersionURI
+                         , Path
                          , Page(..)
                          , Scalar(..)
                          ) where
@@ -15,6 +16,8 @@ newtype VersionURI = VersionURI { unVersionURI :: URI }
 
 mkVersionURI :: URI -> VersionURI
 mkVersionURI = VersionURI
+
+type Path = [VersionURI]
 
 data Page = Page
   { pageVersionURI :: VersionURI

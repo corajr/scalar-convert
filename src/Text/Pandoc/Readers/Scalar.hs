@@ -23,15 +23,17 @@ readScalar opts s = do
   rdf <- case readScalarString s of
     Left err -> Left (ParseFailure (show err))
     Right graph -> Right graph
-  let scalar = parseScalar rdf
+  let scalar = parseScalar rdf Nothing
   scalarToPandoc opts scalar
 
-readAndParseScalarFile :: FilePath -> IO (Either PandocError Pandoc)
-readAndParseScalarFile path = do
+-- | Read Scalar RDF/XML from a file and return a Pandoc document.
+readAndParseScalarFile :: FilePath -> Maybe URI -> IO (Either PandocError Pandoc)
+readAndParseScalarFile path maybeURI = do
   rdf <- readScalarFile path
-  let scalar = parseScalar rdf
+  let scalar = parseScalar rdf maybeURI
   return (scalarToPandoc def scalar)
 
+-- | Convert a 'Scalar' to 'Pandoc', or return the error.
 scalarToPandoc :: ReaderOptions -> Scalar -> Either PandocError Pandoc
 scalarToPandoc opts (Scalar { pages }) = go (Right (Pandoc nullMeta [])) pages
   where go err@(Left _) _ = err
@@ -40,6 +42,7 @@ scalarToPandoc opts (Scalar { pages }) = go (Right (Pandoc nullMeta [])) pages
           Left err -> Left err
           Right pageBlocks -> go (Right (Pandoc meta (blocks ++ pageBlocks))) xs
 
+-- | Convert a 'Page' to a list of Pandoc 'Block's.
 pageToBlocks :: ReaderOptions -> Page -> Either PandocError [Block]
 pageToBlocks opts (Page { pageContent }) = case readHtml opts (T.unpack pageContent) of
   Left err -> Left err
