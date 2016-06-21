@@ -13,7 +13,7 @@ import Text.Pandoc.Error
 
 import Data.Either (isRight)
 
-import Examples (getExample, singlePage, singlePageContent, singlePageContentPandoc)
+import Examples (getExample, singlePage, singlePageContent, singlePageTitle, singlePageContentPandoc)
 
 -- `main` is here so that this module can be run from GHCi on its own.  It is
 -- not needed for automatic spec discovery.
@@ -21,16 +21,16 @@ main :: IO ()
 main = hspec spec
 
 singlePagePandoc :: Pandoc
-singlePagePandoc = Pandoc nullMeta singlePageContentPandoc
+singlePagePandoc = Pandoc nullMeta (singlePageTitle : singlePageContentPandoc)
 
 page :: Page
-page = Page { pageVersionURI = mkVersionURI "", pageContent = singlePageContent }
+page = Page { pageVersionURI = mkVersionURI "", pageTitle = "Introduction", pageContent = singlePageContent }
 
 spec :: Spec
 spec = do
   describe "pageToBlocks" $ do
     it "takes a 'Page' and returns Right '[Block]'" $
-      pageToBlocks def page `shouldBe` Right singlePageContentPandoc
+      pageToBlocks def page `shouldBe` Right (singlePageTitle : singlePageContentPandoc)
   describe "scalarToPandoc" $ do
     it "takes a 'Scalar' book and returns 'Pandoc'" $ do
       let scalar = parseScalar singlePage Nothing

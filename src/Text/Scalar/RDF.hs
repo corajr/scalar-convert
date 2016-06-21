@@ -2,6 +2,7 @@
 module Text.Scalar.RDF ( queryPages
                        , versionFromPageURI
                        , queryContent
+                       , queryTitle
                        , extractPage
                        , extractPath
                        , extractPagesStartingFrom
@@ -46,6 +47,9 @@ composite = UNode "http://scalar.usc.edu/2012/01/scalar-ns#Composite"
 content :: Node
 content = UNode "sioc:content"
 
+title :: Node
+title = UNode "dcterms:title"
+
 pathHasBody :: Node
 pathHasBody = UNode "oac:hasBody"
 
@@ -68,14 +72,26 @@ versionFromPageURI :: RDF rdf => rdf -> URI -> Either ScalarError VersionURI
 versionFromPageURI rdf pageURI = notFound err . fmap (mkVersionURI . fromUNode . object) . listToMaybe $ query rdf (Just (UNode pageURI)) (Just version) Nothing
   where err = show pageURI ++ " has no corresponding versions."
 
--- | Extract the content from a version.
+-- | Extract the text of the object of a predicate from the page version at 'VersionURI'.
+queryPageTextObject :: RDF rdf => Node -> rdf -> VersionURI -> Either ScalarError T.Text
+queryPageTextObject rdfPred rdf vUri = notFound err . fmap (fromLNode . object) . listToMaybe $ attrs
+  where attrs = query rdf (Just (UNode (unVersionURI vUri))) (Just rdfPred) Nothing
+        err = show vUri ++ " has no predicate " ++ show rdfPred ++ "."
+
+-- | Extract the content from the page version at 'VersionURI'.
 queryContent :: RDF rdf => rdf -> VersionURI -> Either ScalarError T.Text
-queryContent rdf vUri = notFound err . fmap (fromLNode . object) . listToMaybe $ query rdf (Just (UNode (unVersionURI vUri))) (Just content) Nothing
-  where err = show vUri ++ " has no content."
+queryContent = queryPageTextObject content
+
+-- | Extract the title from the page version at 'VersionURI'.
+queryTitle :: RDF rdf => rdf -> VersionURI -> Either ScalarError T.Text
+queryTitle = queryPageTextObject title
 
 -- | Extract a full 'Page' given the 'VersionURI'.
 extractPage :: RDF rdf => rdf -> VersionURI -> Either ScalarError Page
-extractPage rdf versionURI = fmap (Page versionURI) $ queryContent rdf versionURI
+extractPage rdf versionURI = do
+  body <- queryContent rdf versionURI
+  title' <- queryTitle rdf versionURI
+  return (Page versionURI title' body)
 
 -- | Extract a path given the starting 'VersionURI'.
 extractPath :: RDF rdf => rdf -> VersionURI -> Either ScalarError Path

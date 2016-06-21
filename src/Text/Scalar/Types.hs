@@ -28,6 +28,7 @@ type Path = [VersionURI]
 
 data Page = Page
   { pageVersionURI :: VersionURI
+  , pageTitle :: T.Text
   , pageContent :: T.Text
   } deriving (Eq, Show)
 

@@ -51,3 +51,6 @@ singlePageContent = "This is a test book for the <a href=\"https://github.com/co
 
 singlePageContentPandoc :: [Block]
 singlePageContentPandoc = [Plain [Str "This",Space,Str "is",Space,Str "a",Space,Str "test",Space,Str "book",Space,Str "for",Space,Str "the",Space,Link ("",[],[]) [Str "scalar-export"] ("https://github.com/corajr/scalar-export",""),Str "\160package.",Space,Str "It",Space,Str "contains",Space,Str "different",Space,Str "formatting,",Space,Str "such",Space,Str "as",Space,Strong [Str "bold"],Space,Str "and\160",Emph [Str "italics"],Str "."]]
+
+singlePageTitle :: Block
+singlePageTitle = Header 1 nullAttr [Str "Introduction"]

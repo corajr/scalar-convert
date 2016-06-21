@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Text.ScalarSpec (main, spec) where
 
 import Test.Hspec
@@ -24,4 +25,4 @@ spec = do
       readScalarString (getExample "single_page.xml") `shouldSatisfy` (\(Right g) -> isIsomorphic g singlePage)
   describe "parseScalar" $ do
     it "parses RDF from a simple book into Scalar" $
-      parseScalar singlePage Nothing `shouldBe` Right (Scalar [Page versionURI singlePageContent])
+      parseScalar singlePage Nothing `shouldBe` Right (Scalar [Page versionURI "Introduction" singlePageContent])

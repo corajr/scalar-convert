@@ -37,9 +37,15 @@ spec = do
   describe "versionFromPageURI" $ do
     it "finds the version URI corresponding to a page" $
       versionFromPageURI singlePage indexURI `shouldBe` Right versionURI
+  describe "queryTitle" $ do
+    it "obtains the page title from the versionURI" $
+      queryTitle singlePage versionURI `shouldBe` Right "Introduction"
+  describe "queryContent" $ do
+    it "obtains the page content from the versionURI" $
+      queryContent singlePage versionURI `shouldBe` Right singlePageContent
   describe "extractPage" $ do
     it "extracts a page and its contents from the RDF store" $
-      extractPage singlePage versionURI `shouldBe` Right (Page versionURI singlePageContent)
+      extractPage singlePage versionURI `shouldBe` Right (Page versionURI "Introduction" singlePageContent)
   let fullBook = case readScalarString (getExample "full_book.xml") of
         Left err -> error (show err)
         Right x -> x

@@ -4,7 +4,7 @@ module Text.Pandoc.Readers.Scalar ( readScalar
                                   , scalarToPandoc
                                   , pageToBlocks
                                   ) where
-
+import Text.Pandoc.Builder
 import Text.Pandoc.Definition
 import Text.Pandoc.Error
 import Text.Pandoc.Options
@@ -38,13 +38,17 @@ readAndParseScalarFile path maybeURI = do
 scalarToPandoc :: ReaderOptions -> Scalar -> Either ScalarError Pandoc
 scalarToPandoc opts (Scalar { pages }) = go (Right (Pandoc nullMeta [])) pages
   where go err@(Left _) _ = err
-        go doc@(Right (Pandoc _ _)) [] = doc
+        go doc'@(Right (Pandoc _ _)) [] = doc'
         go (Right (Pandoc meta blocks)) (x:xs) = case pageToBlocks opts x of
           Left err -> Left err
           Right pageBlocks -> go (Right (Pandoc meta (blocks ++ pageBlocks))) xs
 
 -- | Convert a 'Page' to a list of Pandoc 'Block's.
 pageToBlocks :: ReaderOptions -> Page -> Either ScalarError [Block]
-pageToBlocks opts (Page { pageContent }) = case readHtml opts (T.unpack pageContent) of
-  Left err -> Left (FromPandoc err)
-  Right (Pandoc _ blocks) -> Right blocks
+pageToBlocks opts (Page { pageTitle, pageContent }) = do
+  (Pandoc _ blocks) <- liftPandoc $ readHtml opts (T.unpack pageContent)
+  return $ (toList (header 1 (text (T.unpack pageTitle)))) <> blocks
+
+liftPandoc :: Either PandocError a -> Either ScalarError a
+liftPandoc (Left err) = Left (FromPandoc err)
+liftPandoc (Right x) = Right x
