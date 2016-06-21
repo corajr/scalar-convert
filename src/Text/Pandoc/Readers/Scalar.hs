@@ -1,6 +1,6 @@
 {-# LANGUAGE NamedFieldPuns #-}
-
 module Text.Pandoc.Readers.Scalar ( readScalar
+                                  , readAndParseScalarFile
                                   , scalarToPandoc
                                   , pageToBlocks
                                   ) where
@@ -25,6 +25,12 @@ readScalar opts s = do
     Right graph -> Right graph
   let scalar = parseScalar rdf
   scalarToPandoc opts scalar
+
+readAndParseScalarFile :: FilePath -> IO (Either PandocError Pandoc)
+readAndParseScalarFile path = do
+  rdf <- readScalarFile path
+  let scalar = parseScalar rdf
+  return (scalarToPandoc def scalar)
 
 scalarToPandoc :: ReaderOptions -> Scalar -> Either PandocError Pandoc
 scalarToPandoc opts (Scalar { pages }) = go (Right (Pandoc nullMeta [])) pages
