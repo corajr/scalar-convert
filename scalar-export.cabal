@@ -18,6 +18,7 @@ library
   exposed-modules:     Text.Scalar
                      , Text.Scalar.CLI
                      , Text.Scalar.RDF
+                     , Text.Scalar.Types
                      , Text.Pandoc.Readers.Scalar
   build-depends:       base >= 4.7 && < 5
                      , rdf4h

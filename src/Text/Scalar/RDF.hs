@@ -1,17 +1,19 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Text.Scalar.RDF where
+module Text.Scalar.RDF ( queryPages
+                       , versionFromPageURI
+                       , queryContent
+                       , extractPage
+                       , ScalarRDF
+                       ) where
 
 import Data.RDF
 import qualified Data.Text as T
+import Text.Scalar.Types
 
 type ScalarRDF = HashMapS
-type URI = T.Text
 
 subject :: Triple -> Subject
 subject (Triple x _ _) = x
-
-predicate :: Triple -> Predicate
-predicate (Triple _ x _) = x
 
 object :: Triple -> Object
 object (Triple _ _ x) = x
@@ -19,6 +21,10 @@ object (Triple _ _ x) = x
 fromUNode :: Node -> URI
 fromUNode (UNode x) = x
 fromUNode err = error $ "Expected UNode but got " ++ show err
+
+fromLNode :: Node -> T.Text
+fromLNode (LNode (PlainL x)) = x
+fromLNode err = error $ "Expected LNode but got " ++ show err
 
 rdfType :: Node
 rdfType = UNode "rdf:type"
@@ -29,8 +35,18 @@ version = UNode "scalar:version"
 composite :: Node
 composite = UNode "http://scalar.usc.edu/2012/01/scalar-ns#Composite"
 
+content :: Node
+content = UNode "sioc:content"
+
 queryPages :: RDF rdf => rdf -> [URI]
 queryPages rdf = map (fromUNode . subject) $ query rdf Nothing (Just rdfType) (Just composite)
 
-versionFromPageURI :: RDF rdf => rdf -> URI -> URI
-versionFromPageURI rdf pageURI = fromUNode . object . head $ query rdf (Just (UNode pageURI)) (Just version) Nothing
+versionFromPageURI :: RDF rdf => rdf -> URI -> VersionURI
+versionFromPageURI rdf pageURI = mkVersionURI . fromUNode . object . head $ query rdf (Just (UNode pageURI)) (Just version) Nothing
+
+queryContent :: RDF rdf => rdf -> VersionURI -> T.Text
+queryContent rdf vUri = fromLNode . object . head $ query rdf (Just (UNode (unVersionURI vUri))) (Just content) Nothing
+
+extractPage :: RDF rdf => rdf -> VersionURI -> Page
+extractPage rdf versionURI = Page versionURI content
+  where content = queryContent rdf versionURI

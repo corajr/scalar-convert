@@ -6,6 +6,7 @@ module Examples where
 import Data.RDF
 import Data.Map (Map)
 import qualified Data.Map as Map
+import qualified Data.Text as T
 import Data.FileEmbed
 import qualified Data.ByteString.Char8 as BS
 
@@ -44,4 +45,6 @@ singlePage = mkRdf triples baseurl prefixes
                   , Triple (UNode "http://scalar.usc.edu/works/scalar-export-test/index.1") (UNode "ov:versionnumber") (LNode (PlainL "1"))
                   ]
 
+singlePageContent :: T.Text
+singlePageContent = "This is a test book for the <a href=\"https://github.com/corajr/scalar-export\">scalar-export</a>&nbsp;package. It contains different formatting, such as <strong>bold</strong> and&nbsp;<em>italics</em>."
 

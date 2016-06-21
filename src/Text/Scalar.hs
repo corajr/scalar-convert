@@ -4,6 +4,7 @@ import Data.RDF
 import qualified Data.Text as T
 
 import Text.Scalar.RDF
+import Text.Scalar.Types
 
 {-| Reads a Scalar RDF/XML string into in-memory RDF. -}
 readScalarString :: String -> Either ParseFailure ScalarRDF
