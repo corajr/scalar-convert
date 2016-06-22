@@ -2,13 +2,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Text.Scalar.Types ( URI
                          , VersionURI
-                         , unVersionURI
                          , mkVersionURI
+                         , unVersionURI
+                         , PathID
+                         , mkPathID
+                         , unPathID
                          , Path
                          , Page(..)
                          , Scalar(..)
                          , ScalarError(..)
-                         , FindPagesBy(..)
+                         , PageOrderStrategy(..)
                          , ScalarOptions(..)
                          ) where
 
@@ -16,29 +19,44 @@ import Text.Pandoc.Error (PandocError(..))
 import Data.RDF (ParseFailure)
 
 import Data.Default
+import Data.Map (Map)
 
 import qualified Data.Text as T
 
 type URI = T.Text
 
 newtype VersionURI = VersionURI { unVersionURI :: URI }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
 mkVersionURI :: URI -> VersionURI
 mkVersionURI uri = VersionURI preFragment
   where preFragment = T.takeWhile (/= '#') uri
 
+newtype PathID = PathID { unPathID :: T.Text }
+  deriving (Eq, Show, Ord)
+
+mkPathID :: T.Text -> PathID
+mkPathID = PathID
+
 type Path = [VersionURI]
 
 data Page = Page
-  { pageVersionURI :: VersionURI
-  , pageTitle :: T.Text
+  { pageTitle :: T.Text
   , pageContent :: T.Text
   } deriving (Eq, Show)
 
-data Scalar = Scalar
-  { scalarPages :: [Page]
+data PageOrderStrategy = IndexPath
+                       | Path URI
+                       | None
+                       deriving (Eq, Show)
+
+data ScalarOptions = ScalarOptions
+  { orderPagesBy :: PageOrderStrategy
   } deriving (Eq, Show)
+
+instance Default ScalarOptions where
+  def = ScalarOptions { orderPagesBy = IndexPath
+                      }
 
 deriving instance Eq PandocError
 
@@ -47,15 +65,8 @@ data ScalarError = ScalarError String
                  | FromPandoc PandocError
                  deriving (Eq, Show)
 
-data FindPagesBy = IndexPath
-                 | Path URI
-                 | GetAll
-                 deriving (Eq, Show)
-
-data ScalarOptions = ScalarOptions
-  { findPagesBy :: FindPagesBy
+data Scalar = Scalar
+  { scalarOptions :: ScalarOptions
+  , scalarPaths :: Map PathID Path
+  , scalarPages :: Map VersionURI Page
   } deriving (Eq, Show)
-
-instance Default ScalarOptions where
-  def = ScalarOptions { findPagesBy = IndexPath
-                      }

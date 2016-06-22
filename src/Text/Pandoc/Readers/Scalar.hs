@@ -5,7 +5,6 @@ module Text.Pandoc.Readers.Scalar ( readScalar
                                   , pageToBlocks
                                   ) where
 import Text.Pandoc.Builder
-import Text.Pandoc.Definition
 import Text.Pandoc.Error
 import Text.Pandoc.Options
 
@@ -36,7 +35,8 @@ readAndParseScalarFile path opts = do
 
 -- | Convert a 'Scalar' to 'Pandoc', or return the error.
 scalarToPandoc :: ReaderOptions -> Scalar -> Either ScalarError Pandoc
-scalarToPandoc opts (Scalar { scalarPages = pages }) = go (Right (Pandoc nullMeta [])) pages
+scalarToPandoc opts scalar =
+  go (Right (Pandoc nullMeta [])) (orderPages scalar)
   where go err@(Left _) _ = err
         go doc'@(Right (Pandoc _ _)) [] = doc'
         go (Right (Pandoc meta blocks)) (x:xs) = case pageToBlocks opts x of

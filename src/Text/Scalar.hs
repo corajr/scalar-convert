@@ -3,6 +3,7 @@ module Text.Scalar ( module Text.Scalar.Types
                    , readScalarString
                    , readScalarFile
                    , parseScalar
+                   , orderPages
                    ) where
 
 import Control.Arrow (left)
@@ -22,12 +23,12 @@ readScalarFile :: String -> IO ScalarRDF
 readScalarFile = fmap fromEither . parseFile (XmlParser Nothing Nothing)
 
 -- | Parses the RDF into a 'Scalar' (a list of 'Page's and (eventually) some contextual information).
--- Will attempt to extract pages along a path starting from the provided URI.
--- If URI is 'Nothing', it first truies to find a path starting at /index, and then simply
--- grabs all pages.
 parseScalar :: RDF rdf => rdf -> ScalarOptions -> Either ScalarError Scalar
-parseScalar rdf (ScalarOptions { findPagesBy }) =
-  case findPagesBy of
-    IndexPath -> Scalar <$> extractPagesStartingFromIndex rdf
-    Path pageURI -> Scalar <$> extractPagesStartingFrom rdf pageURI
-    GetAll -> Scalar <$> extractAllPages rdf
+parseScalar rdf opts = do
+  paths <- extractAllPaths rdf
+  pages <- extractAllPages rdf
+  return $ Scalar opts paths pages
+
+-- | Collects the 'Page's into a list according to the 'PageOrderStrategy'.
+orderPages :: Scalar -> [Page]
+orderPages = undefined

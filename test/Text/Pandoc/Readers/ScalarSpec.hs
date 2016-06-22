@@ -13,6 +13,7 @@ import Text.Pandoc.Error
 
 import Data.Either (isRight)
 
+import Text.ScalarSpec (singlePageScalar)
 import Examples (getExample, singlePage, singlePageContent, singlePageTitle, singlePageContentPandoc)
 
 -- `main` is here so that this module can be run from GHCi on its own.  It is
@@ -24,7 +25,7 @@ singlePagePandoc :: Pandoc
 singlePagePandoc = Pandoc nullMeta (singlePageTitle : singlePageContentPandoc)
 
 page :: Page
-page = Page { pageVersionURI = mkVersionURI "", pageTitle = "Introduction", pageContent = singlePageContent }
+page = Page { pageTitle = "Introduction", pageContent = singlePageContent }
 
 spec :: Spec
 spec = do
@@ -33,8 +34,7 @@ spec = do
       pageToBlocks def page `shouldBe` Right (singlePageTitle : singlePageContentPandoc)
   describe "scalarToPandoc" $ do
     it "takes a 'Scalar' book and returns 'Pandoc'" $ do
-      let scalar = parseScalar singlePage def{findPagesBy = GetAll}
-      (scalar >>= scalarToPandoc def) `shouldBe` Right singlePagePandoc
+      scalarToPandoc def singlePageScalar `shouldBe` Right singlePagePandoc
   describe "readScalar" $ do
     it "parses a Scalar RDF/XML string into Right 'Pandoc'" $
       readScalar def (getExample "single_page.xml") `shouldBe` Right singlePagePandoc

@@ -5,24 +5,22 @@ module Text.Scalar.RDF ( queryPages
                        , queryTitle
                        , findIndex
                        , extractPage
-                       , extractPath
-                       , extractPagesStartingFrom
-                       , extractPagesStartingFromIndex
                        , extractAllPages
+                       , extractPath
+                       , extractAllPaths
                        , ScalarRDF
                        ) where
 
 import Data.RDF
+import Data.Map (Map)
+import qualified Data.Map as Map
 import Data.List (find)
 import qualified Data.Text as T
 import Text.Scalar.Types
 
-import Control.Monad ((>=>))
-
 import Data.Maybe (listToMaybe)
 
--- FIXME: Cannot use more efficient HashMapS because Scalar's export of paths depends on order in file.
-type ScalarRDF = TriplesList
+type ScalarRDF = HashMapS
 
 subject :: Triple -> Subject
 subject (Triple x _ _) = x
@@ -100,9 +98,17 @@ queryTitle = queryPageTextObject title
 -- | Extract a full 'Page' given the 'VersionURI'.
 extractPage :: RDF rdf => rdf -> VersionURI -> Either ScalarError Page
 extractPage rdf versionURI = do
-  body <- queryContent rdf versionURI
   title' <- queryTitle rdf versionURI
-  return (Page versionURI title' body)
+  body <- queryContent rdf versionURI
+  return (Page title' body)
+
+-- | Extract all 'Page's in the RDF store.
+extractAllPages :: RDF rdf => rdf -> Either ScalarError (Map VersionURI Page)
+extractAllPages rdf = fmap (Map.fromList) . mapM getPage $ queryPages rdf
+  where getPage pageURI = do
+          versionURI <- versionFromPageURI rdf pageURI
+          page <- extractPage rdf versionURI
+          return (versionURI, page)
 
 -- | Extract a path given the starting 'VersionURI'.
 extractPath :: RDF rdf => rdf -> VersionURI -> Either ScalarError Path
@@ -113,18 +119,6 @@ extractPath rdf versionURI
         getTargets resource = map (mkVersionURI . fromUNode . object) $ query rdf (Just resource) (Just pathHasTarget) Nothing
         pathTargets = concatMap getTargets pathResources
 
--- | Finds the 'VersionURI' of the given page, then grabs all pages along its path.
-extractPagesStartingFrom :: RDF rdf => rdf -> URI -> Either ScalarError [Page]
-extractPagesStartingFrom rdf pageURI = do
-  versionURI <- versionFromPageURI rdf pageURI
-  path <- extractPath rdf versionURI
-  mapM (extractPage rdf) path
-
--- | Attempts to find the index, then grabs all pages along its path.
-extractPagesStartingFromIndex :: RDF rdf => rdf -> Either ScalarError [Page]
-extractPagesStartingFromIndex rdf = findIndex rdf >>= extractPagesStartingFrom rdf
-
--- | Extract all 'Page's in the RDF store.
-extractAllPages :: RDF rdf => rdf -> Either ScalarError [Page]
-extractAllPages rdf = mapM getPage $ queryPages rdf
-  where getPage = versionFromPageURI rdf >=> extractPage rdf
+-- | Extract all 'Path's in the RDF store.
+extractAllPaths :: RDF rdf => rdf -> Either ScalarError (Map PathID Path)
+extractAllPaths = undefined

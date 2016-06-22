@@ -19,7 +19,7 @@ getExample ex = case (lookup ex examples) of
   Just s -> BS.unpack s
   Nothing -> error $ ex ++ " not found"
 
-singlePage :: TriplesList
+singlePage :: HashMapS
 singlePage = mkRdf triples baseurl prefixes
   where baseurl = Just (BaseUrl "")
         prefixes = PrefixMappings $ Map.fromList [ ("dcterms", "http://purl.org/dc/terms/")

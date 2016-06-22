@@ -21,10 +21,10 @@ cliArgs = CliArgs
 
 run :: CliArgs -> IO ()
 run (CliArgs {input, maybeURI}) = do
-  let findBy = case maybeURI of
+  let orderBy = case maybeURI of
         Just uri -> Path $ T.pack uri
         Nothing -> IndexPath
-  pandoc <- readAndParseScalarFile input def{findPagesBy = findBy}
+  pandoc <- readAndParseScalarFile input def{orderPagesBy = orderBy}
   case pandoc of
     Left err -> print err
     Right doc -> putStrLn $ writeJSON def doc
