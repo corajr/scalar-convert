@@ -11,6 +11,9 @@ import Data.FileEmbed
 import qualified Data.ByteString.Char8 as BS
 import Text.Pandoc.Definition
 
+import Data.Default (def)
+import Text.Scalar.Types
+
 examples :: [(FilePath, BS.ByteString)]
 examples = $(embedDir "test/examples")
 
@@ -54,3 +57,22 @@ singlePageContentPandoc = [Plain [Str "This",Space,Str "is",Space,Str "a",Space,
 
 singlePageTitle :: Block
 singlePageTitle = Header 1 nullAttr [Str "Introduction"]
+
+singlePagePandoc :: Pandoc
+singlePagePandoc = Pandoc nullMeta (singlePageTitle : singlePageContentPandoc)
+
+singlePageScalarPage :: Page
+singlePageScalarPage = Page { pageTitle = "Introduction", pageContent = singlePageContent }
+
+singlePageScalar :: Scalar
+singlePageScalar =
+  Scalar { scalarOptions = def
+         , scalarPaths = Map.empty
+         , scalarPages = Map.singleton singlePageVersionURI singlePageScalarPage
+         }
+
+indexURI :: URI
+indexURI = "http://scalar.usc.edu/works/scalar-export-test/index"
+
+singlePageVersionURI :: VersionURI
+singlePageVersionURI = mkVersionURI $ indexURI `mappend` ".1"

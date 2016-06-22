@@ -14,24 +14,18 @@ import Text.Pandoc.Error
 import Data.Either (isRight)
 
 import Text.ScalarSpec (singlePageScalar)
-import Examples (getExample, singlePage, singlePageContent, singlePageTitle, singlePageContentPandoc)
+import Examples
 
 -- `main` is here so that this module can be run from GHCi on its own.  It is
 -- not needed for automatic spec discovery.
 main :: IO ()
 main = hspec spec
 
-singlePagePandoc :: Pandoc
-singlePagePandoc = Pandoc nullMeta (singlePageTitle : singlePageContentPandoc)
-
-page :: Page
-page = Page { pageTitle = "Introduction", pageContent = singlePageContent }
-
 spec :: Spec
 spec = do
   describe "pageToBlocks" $ do
     it "takes a 'Page' and returns Right '[Block]'" $
-      pageToBlocks def page `shouldBe` Right (singlePageTitle : singlePageContentPandoc)
+      pageToBlocks def singlePageScalarPage `shouldBe` Right (singlePageTitle : singlePageContentPandoc)
   describe "scalarToPandoc" $ do
     it "takes a 'Scalar' book and returns 'Pandoc'" $ do
       scalarToPandoc def singlePageScalar `shouldBe` Right singlePagePandoc

@@ -1,24 +1,18 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Text.Scalar.RDFSpec (main, spec, versionURI) where
+module Text.Scalar.RDFSpec (main, spec, singlePageVersionURI) where
 
 import Test.Hspec
 
 import Data.RDF
 import qualified Data.Text as T
 
-import Examples (getExample, singlePage, singlePageContent)
+import Examples
 import Text.Scalar (readScalarString)
 import Text.Scalar.RDF
 import Text.Scalar.Types (Page(..), URI, VersionURI, mkVersionURI)
 
 main :: IO ()
 main = hspec spec
-
-indexURI :: URI
-indexURI = "http://scalar.usc.edu/works/scalar-export-test/index"
-
-versionURI :: VersionURI
-versionURI = mkVersionURI $ indexURI `mappend` ".1"
 
 fullBookVersionURI :: VersionURI
 fullBookVersionURI = mkVersionURI "http://scalar.usc.edu/works/scalar-export-test/index.4"
@@ -39,16 +33,16 @@ spec = do
       findIndex singlePage `shouldBe` Right indexURI
   describe "versionFromPageURI" $ do
     it "finds the version URI corresponding to a page" $
-      versionFromPageURI singlePage indexURI `shouldBe` Right versionURI
+      versionFromPageURI singlePage indexURI `shouldBe` Right singlePageVersionURI
   describe "queryTitle" $ do
-    it "obtains the page title from the versionURI" $
-      queryTitle singlePage versionURI `shouldBe` Right "Introduction"
+    it "obtains the page title from the VersionURI" $
+      queryTitle singlePage singlePageVersionURI `shouldBe` Right "Introduction"
   describe "queryContent" $ do
-    it "obtains the page content from the versionURI" $
-      queryContent singlePage versionURI `shouldBe` Right singlePageContent
+    it "obtains the page content from the VersionURI" $
+      queryContent singlePage singlePageVersionURI `shouldBe` Right singlePageContent
   describe "extractPage" $ do
     it "extracts a page and its contents from the RDF store" $
-      extractPage singlePage versionURI `shouldBe` Right (Page "Introduction" singlePageContent)
+      extractPage singlePage singlePageVersionURI `shouldBe` Right singlePageScalarPage
   let fullBook = case readScalarString (getExample "full_book.xml") of
         Left err -> error (show err)
         Right x -> x

@@ -9,18 +9,9 @@ import Data.RDF
 
 import qualified Data.Map as Map
 
-import Examples (getExample, singlePage, singlePageContent)
+import Examples
 
 import Text.Scalar
-
-import Text.Scalar.RDFSpec (versionURI)
-
-singlePageScalar :: Scalar
-singlePageScalar =
-  Scalar { scalarOptions = def
-         , scalarPaths = Map.empty
-         , scalarPages = Map.singleton versionURI (Page "Introduction" singlePageContent)
-         }
 
 -- `main` is here so that this module can be run from GHCi on its own.  It is
 -- not needed for automatic spec discovery.
@@ -35,3 +26,6 @@ spec = do
   describe "parseScalar" $ do
     it "parses RDF from a simple book into Scalar" $
       parseScalar singlePage def `shouldBe` Right singlePageScalar
+  describe "orderPages" $ do
+    it "produces a list of `Page`s in order" $
+      orderPages singlePageScalar `shouldBe` []
