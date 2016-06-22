@@ -48,4 +48,5 @@ getPath (Scalar { scalarPaths, scalarPages }) path =
   where pathResult = do
           path' <- Map.lookup path scalarPaths
           return $ mapMaybe ((flip Map.lookup) scalarPages) path'
-        err = "Could not find path " ++ show (unPathID path) ++ ". Available paths are:\n" ++ show (Map.keys scalarPaths)
+        err = "Could not find path " ++ show (unPathID path) ++ ". Available paths are:\n" ++
+              concatMap ((\xs -> "- " ++ xs ++ "\n") . T.unpack . unPathID) (Map.keys scalarPaths)
