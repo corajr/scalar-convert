@@ -1,4 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Text.Scalar ( module Text.Scalar.Types
                    , readScalarString
                    , readScalarFile
@@ -8,7 +9,9 @@ module Text.Scalar ( module Text.Scalar.Types
 
 import Control.Arrow (left)
 
+import Data.Maybe (fromMaybe, mapMaybe)
 import Data.RDF
+import qualified Data.Map as Map
 import qualified Data.Text as T
 
 import Text.Scalar.RDF
@@ -31,4 +34,13 @@ parseScalar rdf opts = do
 
 -- | Collects the 'Page's into a list according to the 'PageOrderStrategy'.
 orderPages :: Scalar -> [Page]
-orderPages = undefined
+orderPages (Scalar { scalarOptions, scalarPaths, scalarPages }) =
+  fromMaybe [] $
+    case orderPagesBy scalarOptions of
+      IndexPath -> do
+        indexPath <- Map.lookup (mkPathID "index") scalarPaths
+        return $ mapMaybe ((flip Map.lookup) scalarPages) indexPath
+      Path s -> do
+        startPath <- Map.lookup (mkPathID s) scalarPaths
+        return $ mapMaybe ((flip Map.lookup) scalarPages) startPath
+      None -> return $ Map.elems scalarPages
