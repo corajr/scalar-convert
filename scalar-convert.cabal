@@ -1,5 +1,5 @@
 name:                scalar-convert
-version:             0.1.0
+version:             0.2.0
 synopsis:            Parser for ANVC Scalar's RDF/XML, enabling export via Pandoc
 description:         Please see README.md
 homepage:            https://github.com/corajr/scalar-convert#readme
