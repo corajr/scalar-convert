@@ -8,6 +8,10 @@ module Text.Scalar.Types ( URI
                          , mkPathID
                          , unPathID
                          , Path
+                         , PathResourceURI
+                         , PathBodyURI
+                         , PathTargetURI
+                         , PathComponent(..)
                          , Page(..)
                          , Scalar(..)
                          , ScalarError(..)
@@ -39,6 +43,16 @@ mkPathID :: T.Text -> PathID
 mkPathID = PathID
 
 type Path = [VersionURI]
+
+data PathComponent = PathComponent
+  { pathID :: PathID
+  , pathIndex :: Int
+  , pathVersionURI :: VersionURI
+  } deriving (Eq, Show, Ord)
+
+type PathResourceURI = URI
+type PathBodyURI = URI
+type PathTargetURI = URI
 
 data Page = Page
   { pageTitle :: T.Text

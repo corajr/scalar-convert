@@ -51,9 +51,16 @@ spec = do
   describe "extractAllPages" $ do
     it "extracts all pages from the RDF store" $
       extractAllPages fullBook `shouldSatisfy` (\(Right m) -> Map.size m == 5)
-  describe "extractPath" $ do
-    it "gathers all the version URIs along a path, in order" $
-      extractPath fullBook fullBookVersionURI `shouldBe` Right fullBookIndexPath
+  describe "parsePathTarget" $ do
+    it "converts a URI on a 'Path' to a 'PathComponent'" $ do
+      let pathURI = "http://scalar.usc.edu/works/scalar-export-test/following-a-path.1#index=1"
+          pathComponent = PathComponent { pathID = (mkPathID "index")
+                                        , pathIndex = 1
+                                        , pathVersionURI = page2URI }
+      parsePathTarget pathURI `shouldBe` Just pathComponent
+    it "returns nothing for an invalid path target" $ do
+      let invalidPathURI = "http://scalar.usc.edu/works/scalar-export-test/following-a-path.1"
+      parsePathTarget invalidPathURI `shouldBe` Nothing
   describe "extractAllPaths" $ do
     it "extracts all paths from the RDF store" $
       extractAllPaths fullBook `shouldBe` Right (Map.singleton (mkPathID "index") fullBookIndexPath)
