@@ -12,7 +12,7 @@ import qualified Data.ByteString.Char8 as BS
 import Text.Pandoc.Definition
 
 import Data.Default (def)
-import Text.Scalar.Types
+import Text.Scalar
 
 examples :: [(FilePath, BS.ByteString)]
 examples = $(embedDir "test/examples")
@@ -76,3 +76,14 @@ indexURI = "http://scalar.usc.edu/works/scalar-export-test/index"
 
 singlePageVersionURI :: VersionURI
 singlePageVersionURI = mkVersionURI $ indexURI `mappend` ".1"
+
+fullBookRdf :: HashMapS
+fullBookRdf =
+  case readScalarString (getExample "full_book.xml") of
+    Left err -> error (show err)
+    Right x -> x
+
+fullBookScalar :: Scalar
+fullBookScalar = case parseScalar fullBookRdf def of
+  Left err -> error (show err)
+  Right x -> x

@@ -16,12 +16,13 @@ import Text.Scalar
 
 
 -- | Read Scalar RDF/XML from an input string and return a Pandoc document.
-readScalar :: ReaderOptions -- ^ Reader options
+readScalar :: ReaderOptions -- ^ Pandoc HTML reader options
+           -> ScalarOptions -- ^ Scalar options
            -> String        -- ^ String to parse (assuming @'\n'@ line endings)
            -> Either ScalarError Pandoc
-readScalar rOpts s = do
+readScalar rOpts sOpts s = do
   rdf <- readScalarString s
-  scalar <- parseScalar rdf def
+  scalar <- parseScalar rdf sOpts
   scalarToPandoc rOpts scalar
 
 -- | Read Scalar RDF/XML from a file and return a Pandoc document.
@@ -35,8 +36,9 @@ readAndParseScalarFile path opts = do
 
 -- | Convert a 'Scalar' to 'Pandoc', or return the error.
 scalarToPandoc :: ReaderOptions -> Scalar -> Either ScalarError Pandoc
-scalarToPandoc opts scalar =
-  go (Right (Pandoc nullMeta [])) (orderPages scalar)
+scalarToPandoc opts scalar = do
+  pages <- orderPages scalar
+  go (Right (Pandoc nullMeta [])) pages
   where go err@(Left _) _ = err
         go doc'@(Right (Pandoc _ _)) [] = doc'
         go (Right (Pandoc meta blocks)) (x:xs) = case pageToBlocks opts x of

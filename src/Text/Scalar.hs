@@ -32,15 +32,20 @@ parseScalar rdf opts = do
   pages <- extractAllPages rdf
   return $ Scalar opts paths pages
 
--- | Collects the 'Page's into a list according to the 'PageOrderStrategy'.
-orderPages :: Scalar -> [Page]
-orderPages (Scalar { scalarOptions, scalarPaths, scalarPages }) =
-  fromMaybe [] $
-    case orderPagesBy scalarOptions of
-      IndexPath -> do
-        indexPath <- Map.lookup (mkPathID "index") scalarPaths
-        return $ mapMaybe ((flip Map.lookup) scalarPages) indexPath
-      Path s -> do
-        startPath <- Map.lookup (mkPathID s) scalarPaths
-        return $ mapMaybe ((flip Map.lookup) scalarPages) startPath
-      None -> return $ Map.elems scalarPages
+-- | Collects the 'Page's into a list according to the 'PageOrderStrategy',
+-- or returns an error
+orderPages :: Scalar -> Either ScalarError [Page]
+orderPages scalar@(Scalar { scalarOptions, scalarPages }) =
+  case orderPagesBy scalarOptions of
+    IndexPath -> getPath scalar (mkPathID "index")
+    Path s -> getPath scalar (mkPathID s)
+    None -> return $ Map.elems scalarPages
+
+-- | Attempts to get the specified 'PathID' or returns an error.
+getPath :: Scalar -> PathID -> Either ScalarError [Page]
+getPath (Scalar { scalarPaths, scalarPages }) path =
+  maybe (Left (ScalarError err)) Right pathResult
+  where pathResult = do
+          path' <- Map.lookup path scalarPaths
+          return $ mapMaybe ((flip Map.lookup) scalarPages) path'
+        err = "Could not find path " ++ show (unPathID path) ++ ". Available paths are:\n" ++ show (Map.keys scalarPaths)

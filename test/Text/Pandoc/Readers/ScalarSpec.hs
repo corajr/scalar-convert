@@ -28,9 +28,9 @@ spec = do
       pageToBlocks def singlePageScalarPage `shouldBe` Right (singlePageTitle : singlePageContentPandoc)
   describe "scalarToPandoc" $ do
     it "takes a 'Scalar' book and returns 'Pandoc'" $ do
-      scalarToPandoc def singlePageScalar `shouldBe` Right singlePagePandoc
+      scalarToPandoc def singlePageScalar { scalarOptions = def { orderPagesBy = None }} `shouldBe` Right singlePagePandoc
   describe "readScalar" $ do
     it "parses a Scalar RDF/XML string into Right 'Pandoc'" $
-      readScalar def (getExample "single_page.xml") `shouldBe` Right singlePagePandoc
+      readScalar def def {orderPagesBy = None } (getExample "single_page.xml") `shouldBe` Right singlePagePandoc
     it "parses a complex Scalar RDF/XML string into Right 'Pandoc'" $
-      readScalar def (getExample "full_book.xml") `shouldSatisfy` isRight
+      readScalar def def (getExample "full_book.xml") `shouldSatisfy` isRight

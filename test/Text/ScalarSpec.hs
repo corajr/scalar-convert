@@ -5,6 +5,7 @@ import Test.Hspec
 import Test.QuickCheck
 
 import Data.Default (def)
+import Data.List (isPrefixOf)
 import Data.RDF
 
 import qualified Data.Map as Map
@@ -27,8 +28,9 @@ spec = do
     it "parses RDF from a simple book into Scalar" $
       parseScalar singlePage def `shouldBe` Right singlePageScalar
   describe "orderPages" $ do
-    it "produces a list of `Page`s in order" $
-      orderPages singlePageScalar `shouldBe` [singlePageScalarPage]
+    it "throws an error if a path is missing" $
+      orderPages singlePageScalar `shouldSatisfy` (\(Left (ScalarError err)) -> "Could not find path" `isPrefixOf` err)
     it "gets all pages if `None` page order strategy is used" $
-      pending
-      -- orderPages fullBookScalar{orderPagesBy = GetAll } `shouldBe` fullBookScalarPages
+      orderPages singlePageScalar {scalarOptions = def {orderPagesBy = None}} `shouldBe` Right [singlePageScalarPage]
+    it "returns a list of pages in order" $
+      orderPages fullBookScalar `shouldSatisfy` (\(Right pages) -> length pages == 3)

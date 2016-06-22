@@ -44,13 +44,10 @@ spec = do
   describe "extractPage" $ do
     it "extracts a page and its contents from the RDF store" $
       extractPage singlePage singlePageVersionURI `shouldBe` Right singlePageScalarPage
-  let fullBook = case readScalarString (getExample "full_book.xml") of
-        Left err -> error (show err)
-        Right x -> x
-      fullBookIndexPath = [fullBookVersionURI, page2URI, page3URI]
+  let fullBookIndexPath = [fullBookVersionURI, page2URI, page3URI]
   describe "extractAllPages" $ do
     it "extracts all pages from the RDF store" $
-      extractAllPages fullBook `shouldSatisfy` (\(Right m) -> Map.size m == 5)
+      extractAllPages fullBookRdf `shouldSatisfy` (\(Right m) -> Map.size m == 5)
   describe "parsePathTarget" $ do
     it "converts a URI on a 'Path' to a 'PathComponent'" $ do
       let pathURI = "http://scalar.usc.edu/works/scalar-export-test/following-a-path.1#index=1"
@@ -63,4 +60,4 @@ spec = do
       parsePathTarget invalidPathURI `shouldBe` Nothing
   describe "extractAllPaths" $ do
     it "extracts all paths from the RDF store" $
-      extractAllPaths fullBook `shouldBe` Right (Map.singleton (mkPathID "index") fullBookIndexPath)
+      extractAllPaths fullBookRdf `shouldBe` Right (Map.singleton (mkPathID "index") fullBookIndexPath)
