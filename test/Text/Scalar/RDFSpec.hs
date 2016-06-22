@@ -5,11 +5,12 @@ import Test.Hspec
 
 import Data.RDF
 import qualified Data.Text as T
+import qualified Data.Map as Map
 
 import Examples
 import Text.Scalar (readScalarString)
 import Text.Scalar.RDF
-import Text.Scalar.Types (Page(..), URI, VersionURI, mkVersionURI)
+import Text.Scalar.Types
 
 main :: IO ()
 main = hspec spec
@@ -46,6 +47,13 @@ spec = do
   let fullBook = case readScalarString (getExample "full_book.xml") of
         Left err -> error (show err)
         Right x -> x
+      fullBookIndexPath = [fullBookVersionURI, page2URI, page3URI]
+  describe "extractAllPages" $ do
+    it "extracts all pages from the RDF store" $
+      extractAllPages fullBook `shouldSatisfy` (\(Right m) -> Map.size m == 5)
   describe "extractPath" $ do
-    it "gathers all the pages along a path" $
-      extractPath fullBook fullBookVersionURI `shouldBe` Right [fullBookVersionURI, page2URI, page3URI]
+    it "gathers all the version URIs along a path, in order" $
+      extractPath fullBook fullBookVersionURI `shouldBe` Right fullBookIndexPath
+  describe "extractAllPaths" $ do
+    it "extracts all paths from the RDF store" $
+      extractAllPaths fullBook `shouldBe` Right (Map.singleton (mkPathID "index") fullBookIndexPath)

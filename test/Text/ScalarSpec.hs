@@ -28,4 +28,7 @@ spec = do
       parseScalar singlePage def `shouldBe` Right singlePageScalar
   describe "orderPages" $ do
     it "produces a list of `Page`s in order" $
-      orderPages singlePageScalar `shouldBe` []
+      orderPages singlePageScalar `shouldBe` [singlePageScalarPage]
+    it "gets all pages if `None` page order strategy is used" $
+      pending
+      -- orderPages fullBookScalar{orderPagesBy = GetAll } `shouldBe` fullBookScalarPages
