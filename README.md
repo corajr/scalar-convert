@@ -29,6 +29,16 @@ convenient directory, then open that directory in the terminal and run:
 
 `scalar-convert content.xml | pandoc -f json -o output.html`
 
+### Specifying a path
+
+By default, scalar-convert follows the path starting on the home page to get the
+order of pages. If you wish to specify a different path, such as
+`table-of-contents`, run:
+
+`scalar-convert -p table-of-contents content.xml | pandoc -f json -o output.html`
+
+### Output options
+
 All the output formats and options of pandoc are available to you; for example,
 to create an MS Word document, you could run:
 
