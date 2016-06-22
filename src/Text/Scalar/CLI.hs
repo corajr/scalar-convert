@@ -35,4 +35,4 @@ main = execParser opts >>= run
     opts = info (helper <*> cliArgs)
       ( fullDesc
      <> progDesc "Reads INPUT and outputs pandoc's native format to stdout"
-     <> header "scalar-export - convert ANVC Scalar RDF/XML with pandoc" )
+     <> header "scalar-convert - export ANVC Scalar RDF/XML with pandoc" )
