@@ -35,6 +35,9 @@ spec = do
   describe "versionFromPageURI" $ do
     it "finds the version URI corresponding to a page" $
       versionFromPageURI singlePage indexURI `shouldBe` Right singlePageVersionURI
+  describe "versionURItoResourceID" $ do
+    it "returns the resource ID for the URI" $
+      versionURItoResourceID singlePageVersionURI `shouldBe` Just "index"
   describe "queryTitle" $ do
     it "obtains the page title from the VersionURI" $
       queryTitle singlePage singlePageVersionURI `shouldBe` Right "Introduction"

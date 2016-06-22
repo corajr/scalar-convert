@@ -2,6 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Text.Scalar.RDF ( queryPages
                        , versionFromPageURI
+                       , versionURItoResourceID
                        , queryContent
                        , queryTitle
                        , findIndex
@@ -36,9 +37,6 @@ object (Triple _ _ x) = x
 
 subjectAndObject :: Triple -> (URI, URI)
 subjectAndObject = (fromUNode . subject) &&& (fromUNode . object)
-
-joinMap :: (Ord b) => Map a b -> Map b c -> Map a c
-joinMap a b = Map.mapMaybe (\x -> Map.lookup x b) a
 
 fromUNode :: Node -> URI
 fromUNode (UNode x) = x
@@ -92,6 +90,16 @@ findIndex rdf = notFound err maybePage
 versionFromPageURI :: RDF rdf => rdf -> URI -> Either ScalarError VersionURI
 versionFromPageURI rdf pageURI = notFound err . fmap (mkVersionURI . fromUNode . object) . listToMaybe $ query rdf (Just (UNode pageURI)) (Just version) Nothing
   where err = show pageURI ++ " has no corresponding versions."
+
+versionURItoResourceID :: VersionURI -> Maybe String
+versionURItoResourceID vUri = do
+  let uri = T.unpack (unVersionURI vUri)
+      regResult :: Maybe (AllTextSubmatches [] String) = uri =~~ ("/([^./]+?)\\.\\d+$" :: String)
+  reg <- regResult
+  let matches = getAllTextSubmatches reg
+  guard $ length matches == 2
+  let [_, resourceID] = matches
+  return resourceID
 
 -- | Extract the text of the object of a predicate from the page version at 'VersionURI'.
 queryPageTextObject :: RDF rdf => Node -> rdf -> VersionURI -> Either ScalarError T.Text
