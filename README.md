@@ -23,8 +23,16 @@ stack install
 
 ## Usage
 
-First, export your book as RDF/XML from the link on the Import/Export tab of
+First, export your book as RDF/XML from the link on the Import/Export tab on
 your Scalar Dashboard. Save the resulting file name as `content.xml` in a
 convenient directory, then open that directory in the terminal and run:
 
-`scalar-export content.xml | pandoc -f native -o output.html`
+`scalar-convert content.xml | pandoc -f json -o output.html`
+
+All the output formats and options of pandoc are available to you; for example,
+to create an MS Word document, you could run:
+
+`scalar-convert content.xml | pandoc -f json -o output.docx`
+
+See the Pandoc [README](http://pandoc.org/README.html) for a full list of
+options.
