@@ -3,6 +3,7 @@
 module Text.Scalar.RDF ( queryPages
                        , versionFromPageURI
                        , versionURItoResourceID
+                       , bodyURItoPathID
                        , queryContent
                        , queryTitle
                        , findIndex
@@ -139,20 +140,23 @@ extractAllPages rdf = fmap (Map.fromList . catMaybes) . mapM (getPage) $ queryPa
              return $ Just (versionURI, page)
           `catchError` (return . const Nothing)
 
--- | Takes a path of the form "[versionUri]#[pathID]=[index]" and converts it to a
+-- | Takes a path target of the form "[versionUri]#index=[index]" and converts it to a
 -- 'PathComponent'
 parsePathTarget :: URI -> Maybe PathComponent
 parsePathTarget uri = do
   let uri' = T.unpack uri
-      regResult :: Maybe (AllTextSubmatches [] String) = uri' =~~ ("([^#]+)#([^=]+)=(\\d+)" :: String)
+      regResult :: Maybe (AllTextSubmatches [] String) = uri' =~~ ("([^#]+)#index=(\\d+)" :: String)
   reg <- regResult
   let matches = getAllTextSubmatches reg
-  guard $ length matches == 4
-  let [_, versionURI, pathID', index] = matches
-  return $ PathComponent { pathID = mkPathID (T.pack pathID')
-                         , pathIndex = read index
-                         , pathVersionURI = mkVersionURI (T.pack versionURI)
-                         }
+  guard $ length matches == 3
+  let [_, versionURI, index] = matches
+  return PathComponent { pathIndex = read index
+                       , pathVersionURI = mkVersionURI (T.pack versionURI)
+                       }
+
+bodyURItoPathID :: PathBodyURI -> PathID
+bodyURItoPathID uri = (mkPathID . maybe "" T.pack) (versionURItoResourceID vUri)
+  where vUri = mkVersionURI uri
 
 -- | Extract all 'Path's in the RDF store.
 extractAllPaths :: RDF rdf => rdf -> ScalarM (Map PathID Path)
@@ -161,6 +165,6 @@ extractAllPaths rdf = do
       resourceToTarget :: Map PathResourceURI PathTargetURI = Map.fromList . map subjectAndObject $ query rdf Nothing (Just pathHasTarget) Nothing
       resourceToPathComponent :: Map PathResourceURI PathComponent = Map.mapMaybe parsePathTarget resourceToTarget
       bodyAndPathComponents :: [(PathBodyURI, PathComponent)] = Map.elems $ Map.intersectionWith (,) resourceToBody resourceToPathComponent
-      pathIDtoBodyAndPathComponentList :: Map PathID [(PathBodyURI, PathComponent)] = Map.fromListWith (++) $ map ((pathID . snd) &&& (:[])) bodyAndPathComponents
+      pathIDtoBodyAndPathComponentList :: Map PathID [(PathBodyURI, PathComponent)] = Map.fromListWith (++) $ map ((bodyURItoPathID . fst) &&& (:[])) bodyAndPathComponents
       pathIDtoPath :: Map PathID Path = Map.map (\xs@(x:_) -> mkVersionURI (fst x) : map pathVersionURI (sort (map snd xs))) pathIDtoBodyAndPathComponentList
   return pathIDtoPath

@@ -50,8 +50,7 @@ mkPathID = PathID
 type Path = [VersionURI]
 
 data PathComponent = PathComponent
-  { pathID :: PathID
-  , pathIndex :: Int
+  { pathIndex :: Int
   , pathVersionURI :: VersionURI
   } deriving (Eq, Show, Ord)
 

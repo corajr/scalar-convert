@@ -54,8 +54,7 @@ spec = do
   describe "parsePathTarget" $ do
     it "converts a URI on a 'Path' to a 'PathComponent'" $ do
       let pathURI = "http://scalar.usc.edu/works/scalar-export-test/following-a-path.1#index=1"
-          pathComponent = PathComponent { pathID = (mkPathID "index")
-                                        , pathIndex = 1
+          pathComponent = PathComponent { pathIndex = 1
                                         , pathVersionURI = page2URI }
       parsePathTarget pathURI `shouldBe` Just pathComponent
     it "returns nothing for an invalid path target" $ do
