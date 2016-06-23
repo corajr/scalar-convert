@@ -28,7 +28,7 @@ noteSpan :: Inline
 noteSpan = Span ("",["note"],[("rev","scalar:has_note"),("resource","note-on-notes")]) [Str "notes"]
 
 processedNoteSpan :: Inline
-processedNoteSpan = Span ("",[],[]) [Str "notes",Note [Plain [Str "this"]]]
+processedNoteSpan = Span ("",[],[]) [Str "notes",Note [Para [Str "this"]]]
 
 notePage :: Page
 notePage = Page { pageTitle = "Note on notes"

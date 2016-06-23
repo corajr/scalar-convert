@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NamedFieldPuns #-}
 module Text.Pandoc.Readers.Scalar ( readScalar
                                   , readAndParseScalarFile
@@ -55,8 +56,9 @@ scalarToPandoc opts scalar = do
 -- | Convert a 'Page' to a list of Pandoc 'Block's.
 pageToBlocks :: ReaderOptions -> Page -> ScalarM [Block]
 pageToBlocks opts Page { pageTitle, pageContent } = do
-  (Pandoc _ blocks) <- liftPandoc $ readHtml opts (T.unpack pageContent)
-  return $ toList (header 1 (text (T.unpack pageTitle))) <> blocks
+  let content = "<h1>" <> pageTitle <> "</h1>" <> pageContent
+  (Pandoc _ blocks) <- liftPandoc $ readHtml opts (T.unpack content)
+  return blocks
 
 -- | Returns 'Just' the pandoc content of another page (such as a note or
 -- annotation), or 'Nothing'.
