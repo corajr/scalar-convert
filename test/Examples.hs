@@ -11,6 +11,11 @@ import Data.FileEmbed
 import qualified Data.ByteString.Char8 as BS
 import Text.Pandoc.Definition
 
+import Data.Default (def)
+import Text.Scalar
+
+import Test.Hspec (Expectation, shouldBe, shouldSatisfy)
+
 examples :: [(FilePath, BS.ByteString)]
 examples = $(embedDir "test/examples")
 
@@ -19,7 +24,7 @@ getExample ex = case (lookup ex examples) of
   Just s -> BS.unpack s
   Nothing -> error $ ex ++ " not found"
 
-singlePage :: TriplesList
+singlePage :: HashMapS
 singlePage = mkRdf triples baseurl prefixes
   where baseurl = Just (BaseUrl "")
         prefixes = PrefixMappings $ Map.fromList [ ("dcterms", "http://purl.org/dc/terms/")
@@ -50,7 +55,43 @@ singlePageContent :: T.Text
 singlePageContent = "This is a test book for the <a href=\"https://github.com/corajr/scalar-export\">scalar-export</a>&nbsp;package. It contains different formatting, such as <strong>bold</strong> and&nbsp;<em>italics</em>."
 
 singlePageContentPandoc :: [Block]
-singlePageContentPandoc = [Plain [Str "This",Space,Str "is",Space,Str "a",Space,Str "test",Space,Str "book",Space,Str "for",Space,Str "the",Space,Link ("",[],[]) [Str "scalar-export"] ("https://github.com/corajr/scalar-export",""),Str "\160package.",Space,Str "It",Space,Str "contains",Space,Str "different",Space,Str "formatting,",Space,Str "such",Space,Str "as",Space,Strong [Str "bold"],Space,Str "and\160",Emph [Str "italics"],Str "."]]
+singlePageContentPandoc = [Para [Str "This",Space,Str "is",Space,Str "a",Space,Str "test",Space,Str "book",Space,Str "for",Space,Str "the",Space,Link ("",[],[]) [Str "scalar-export"] ("https://github.com/corajr/scalar-export",""),Str "\160package.",Space,Str "It",Space,Str "contains",Space,Str "different",Space,Str "formatting,",Space,Str "such",Space,Str "as",Space,Strong [Str "bold"],Space,Str "and\160",Emph [Str "italics"],Str "."]]
 
 singlePageTitle :: Block
-singlePageTitle = Header 1 nullAttr [Str "Introduction"]
+singlePageTitle = Header 1 ("introduction", [], []) [Str "Introduction"]
+
+singlePagePandoc :: Pandoc
+singlePagePandoc = Pandoc nullMeta (singlePageTitle : singlePageContentPandoc)
+
+singlePageScalarPage :: Page
+singlePageScalarPage = Page { pageTitle = "Introduction", pageContent = singlePageContent }
+
+singlePageScalar :: Scalar
+singlePageScalar =
+  Scalar { scalarOptions = def
+         , scalarPaths = Map.empty
+         , scalarPages = Map.singleton singlePageVersionURI singlePageScalarPage
+         }
+
+indexURI :: URI
+indexURI = "http://scalar.usc.edu/works/scalar-export-test/index"
+
+singlePageVersionURI :: VersionURI
+singlePageVersionURI = mkVersionURI $ indexURI `mappend` ".1"
+
+fullBookRdf :: HashMapS
+fullBookRdf =
+  case fst (runScalarM (readScalarString (getExample "full_book.xml"))) of
+    Left err -> error (show err)
+    Right x -> x
+
+fullBookScalar :: Scalar
+fullBookScalar = case runScalarM (parseScalar fullBookRdf def) of
+  (Left err, _) -> error (show err)
+  (Right x, _) -> x
+
+shouldBeScalar :: (Eq a, Show a) => ScalarM a -> Either ScalarError a -> Expectation
+action `shouldBeScalar` result = fst (runScalarM action) `shouldBe` result
+
+shouldSatisfyScalar :: (Show a) => ScalarM a -> (Either ScalarError a -> Bool) -> Expectation
+action `shouldSatisfyScalar` predicate = fst (runScalarM action) `shouldSatisfy` predicate

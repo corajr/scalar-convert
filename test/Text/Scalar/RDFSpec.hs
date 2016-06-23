@@ -1,24 +1,19 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Text.Scalar.RDFSpec (main, spec, versionURI) where
+module Text.Scalar.RDFSpec (main, spec, singlePageVersionURI) where
 
 import Test.Hspec
 
 import Data.RDF
 import qualified Data.Text as T
+import qualified Data.Map as Map
 
-import Examples (getExample, singlePage, singlePageContent)
+import Examples
 import Text.Scalar (readScalarString)
 import Text.Scalar.RDF
-import Text.Scalar.Types (Page(..), URI, VersionURI, mkVersionURI)
+import Text.Scalar.Types
 
 main :: IO ()
 main = hspec spec
-
-indexURI :: URI
-indexURI = "http://scalar.usc.edu/works/scalar-export-test/index"
-
-versionURI :: VersionURI
-versionURI = mkVersionURI $ indexURI `mappend` ".1"
 
 fullBookVersionURI :: VersionURI
 fullBookVersionURI = mkVersionURI "http://scalar.usc.edu/works/scalar-export-test/index.4"
@@ -36,25 +31,38 @@ spec = do
       queryPages singlePage `shouldBe` [indexURI]
   describe "findIndex" $ do
     it "returns the URI of the index" $
-      findIndex singlePage `shouldBe` Right indexURI
+      findIndex singlePage `shouldBeScalar` Right indexURI
   describe "versionFromPageURI" $ do
     it "finds the version URI corresponding to a page" $
-      versionFromPageURI singlePage indexURI `shouldBe` Right versionURI
+      versionFromPageURI singlePage indexURI `shouldBeScalar` Right singlePageVersionURI
+  describe "versionURItoResourceID" $ do
+    it "returns the resource ID for the URI" $
+      versionURItoResourceID singlePageVersionURI `shouldBe` Just "index"
+  describe "annotationURLtoResourceID" $ do
+    it "returns the resource ID for annotated media URL" $
+      annotationURLtoResourceID "http://vimeo.com/12345#annotation-on-media" `shouldBe` Just "annotation-on-media"
   describe "queryTitle" $ do
-    it "obtains the page title from the versionURI" $
-      queryTitle singlePage versionURI `shouldBe` Right "Introduction"
+    it "obtains the page title from the VersionURI" $
+      queryTitle singlePage singlePageVersionURI `shouldBeScalar` Right "Introduction"
   describe "queryContent" $ do
-    it "obtains the page content from the versionURI" $
-      queryContent singlePage versionURI `shouldBe` Right singlePageContent
+    it "obtains the page content from the VersionURI" $
+      queryContent singlePage singlePageVersionURI `shouldBeScalar` Right singlePageContent
   describe "extractPage" $ do
     it "extracts a page and its contents from the RDF store" $
-      extractPage singlePage versionURI `shouldBe` Right (Page versionURI "Introduction" singlePageContent)
-  let fullBook = case readScalarString (getExample "full_book.xml") of
-        Left err -> error (show err)
-        Right x -> x
-  describe "extractPath" $ do
-    it "gathers all the pages along a path" $
-      extractPath fullBook fullBookVersionURI `shouldBe` Right [fullBookVersionURI, page2URI, page3URI]
-  describe "extractPagesStartingFrom" $ do
-    it "gathers pages starting from the specified URI" $
-      fmap (map pageVersionURI) (extractPagesStartingFrom fullBook indexURI) `shouldBe` Right [fullBookVersionURI, page2URI, page3URI]
+      extractPage singlePage singlePageVersionURI `shouldBeScalar` Right singlePageScalarPage
+  let fullBookIndexPath = [fullBookVersionURI, page2URI, page3URI]
+  describe "extractAllPages" $ do
+    it "extracts all pages from the RDF store" $
+      extractAllPages fullBookRdf `shouldSatisfyScalar` (\(Right m) -> Map.size m == 5)
+  describe "parsePathTarget" $ do
+    it "converts a URI on a 'Path' to a 'PathComponent'" $ do
+      let pathURI = "http://scalar.usc.edu/works/scalar-export-test/following-a-path.1#index=1"
+          pathComponent = PathComponent { pathIndex = 1
+                                        , pathVersionURI = page2URI }
+      parsePathTarget pathURI `shouldBe` Just pathComponent
+    it "returns nothing for an invalid path target" $ do
+      let invalidPathURI = "http://scalar.usc.edu/works/scalar-export-test/following-a-path.1"
+      parsePathTarget invalidPathURI `shouldBe` Nothing
+  describe "extractAllPaths" $ do
+    it "extracts all paths from the RDF store" $
+      extractAllPaths fullBookRdf `shouldBeScalar` Right (Map.singleton (mkPathID "index") fullBookIndexPath)

@@ -1,34 +1,51 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Text.Scalar.RDF ( queryPages
                        , versionFromPageURI
+                       , versionURItoResourceID
+                       , annotationURLtoResourceID
+                       , bodyURItoPathID
                        , queryContent
                        , queryTitle
                        , findIndex
                        , extractPage
-                       , extractPath
-                       , extractPagesStartingFrom
-                       , extractPagesStartingFromIndex
                        , extractAllPages
+                       , parsePathTarget
+                       , extractAllPaths
                        , ScalarRDF
                        ) where
 
 import Data.RDF
-import Data.List (find)
+import Data.Map (Map)
+import qualified Data.Map as Map
+import Data.List (find, sort)
 import qualified Data.Text as T
+
+import Text.Regex.PCRE
 import Text.Scalar.Types
 
-import Control.Monad ((>=>))
+import Data.Maybe (listToMaybe, catMaybes)
 
-import Data.Maybe (listToMaybe)
+import Control.Arrow ((&&&))
 
--- FIXME: Cannot use more efficient HashMapS because Scalar's export of paths depends on order in file.
-type ScalarRDF = TriplesList
+import Control.Monad.Except
+import Control.Monad.Writer
+
+type ScalarRDF = HashMapS
 
 subject :: Triple -> Subject
 subject (Triple x _ _) = x
 
 object :: Triple -> Object
 object (Triple _ _ x) = x
+
+subjectAndObject :: Triple -> (URI, URI)
+subjectAndObject = (textFromNode . subject) &&& (textFromNode . object)
+
+textFromNode :: Node -> T.Text
+textFromNode (UNode x) = x
+textFromNode (LNode (PlainL x)) = x
+textFromNode err = error $ "Don't know how to parse node " ++ show err
 
 fromUNode :: Node -> URI
 fromUNode (UNode x) = x
@@ -60,18 +77,18 @@ pathHasTarget :: Node
 pathHasTarget = UNode "oac:hasTarget"
 
 -- | Display an error if an object is not found.
-notFound :: String -> Maybe a -> Either ScalarError a
+notFound :: String -> Maybe a -> ScalarM a
 notFound errMsg maybeA =
   case maybeA of
-    Just a -> Right a
-    Nothing -> Left (ScalarError errMsg)
+    Just a -> return a
+    Nothing -> tell errMsg >> throwError (ScalarError errMsg)
 
 -- | Find all page URIs in 'RDF'.
 queryPages :: RDF rdf => rdf -> [URI]
 queryPages rdf = map (fromUNode . subject) $ query rdf Nothing (Just rdfType) (Just composite)
 
 -- | Find the index page URI (of the form /index) or return an error.
-findIndex :: RDF rdf => rdf -> Either ScalarError URI
+findIndex :: RDF rdf => rdf -> ScalarM URI
 findIndex rdf = notFound err maybePage
   where pages = queryPages rdf
         f x = snd $ T.breakOnEnd "/" x
@@ -79,52 +96,83 @@ findIndex rdf = notFound err maybePage
         err = "Could not find index in " ++ show pages
 
 -- | Get the corresponding live version for each page 'URI'.
-versionFromPageURI :: RDF rdf => rdf -> URI -> Either ScalarError VersionURI
+versionFromPageURI :: RDF rdf => rdf -> URI -> ScalarM VersionURI
 versionFromPageURI rdf pageURI = notFound err . fmap (mkVersionURI . fromUNode . object) . listToMaybe $ query rdf (Just (UNode pageURI)) (Just version) Nothing
   where err = show pageURI ++ " has no corresponding versions."
 
+-- | Extract a single field from a URI string by regex
+getSingleFieldFromString :: String -> String -> Maybe String
+getSingleFieldFromString regex input = do
+  let regResult :: Maybe (AllTextSubmatches [] String) = input =~~ regex
+  reg <- regResult
+  let matches = getAllTextSubmatches reg
+  guard $ length matches == 2
+  let [_, field] = matches
+  return field
+
+-- | Turn a 'VersionURI' into an identifier, e.g. "http://scalar.usc.edu/works/work/version.1" -> "version"
+versionURItoResourceID :: VersionURI -> Maybe String
+versionURItoResourceID = getSingleFieldFromString "/([^./]+?)\\.\\d+$" . T.unpack . unVersionURI
+
+-- | Turn an annotation URL into an identifier, e.g. "http://vimeo.com/12345#annotation" -> "annotation"
+annotationURLtoResourceID :: String -> Maybe String
+annotationURLtoResourceID = getSingleFieldFromString "/[^./]+?#(.+)$"
+
 -- | Extract the text of the object of a predicate from the page version at 'VersionURI'.
-queryPageTextObject :: RDF rdf => Node -> rdf -> VersionURI -> Either ScalarError T.Text
+queryPageTextObject :: RDF rdf => Node -> rdf -> VersionURI -> ScalarM T.Text
 queryPageTextObject rdfPred rdf vUri = notFound err . fmap (fromLNode . object) . listToMaybe $ attrs
   where attrs = query rdf (Just (UNode (unVersionURI vUri))) (Just rdfPred) Nothing
-        err = show vUri ++ " has no predicate " ++ show rdfPred ++ "."
+        err = show vUri ++ " has no predicate " ++ show rdfPred ++ ".\n"
 
 -- | Extract the content from the page version at 'VersionURI'.
-queryContent :: RDF rdf => rdf -> VersionURI -> Either ScalarError T.Text
+queryContent :: RDF rdf => rdf -> VersionURI -> ScalarM T.Text
 queryContent = queryPageTextObject content
 
 -- | Extract the title from the page version at 'VersionURI'.
-queryTitle :: RDF rdf => rdf -> VersionURI -> Either ScalarError T.Text
+queryTitle :: RDF rdf => rdf -> VersionURI -> ScalarM T.Text
 queryTitle = queryPageTextObject title
 
 -- | Extract a full 'Page' given the 'VersionURI'.
-extractPage :: RDF rdf => rdf -> VersionURI -> Either ScalarError Page
+extractPage :: RDF rdf => rdf -> VersionURI -> ScalarM Page
 extractPage rdf versionURI = do
-  body <- queryContent rdf versionURI
   title' <- queryTitle rdf versionURI
-  return (Page versionURI title' body)
-
--- | Extract a path given the starting 'VersionURI'.
-extractPath :: RDF rdf => rdf -> VersionURI -> Either ScalarError Path
-extractPath rdf versionURI
-  | length pathTargets >= 0 = Right (versionURI : pathTargets)
-  | otherwise = Left (ScalarError $ "No path found for " ++ show versionURI)
-  where pathResources = map subject $ query rdf Nothing (Just pathHasBody) (Just (UNode (unVersionURI versionURI)))
-        getTargets resource = map (mkVersionURI . fromUNode . object) $ query rdf (Just resource) (Just pathHasTarget) Nothing
-        pathTargets = concatMap getTargets pathResources
-
--- | Finds the 'VersionURI' of the given page, then grabs all pages along its path.
-extractPagesStartingFrom :: RDF rdf => rdf -> URI -> Either ScalarError [Page]
-extractPagesStartingFrom rdf pageURI = do
-  versionURI <- versionFromPageURI rdf pageURI
-  path <- extractPath rdf versionURI
-  mapM (extractPage rdf) path
-
--- | Attempts to find the index, then grabs all pages along its path.
-extractPagesStartingFromIndex :: RDF rdf => rdf -> Either ScalarError [Page]
-extractPagesStartingFromIndex rdf = findIndex rdf >>= extractPagesStartingFrom rdf
+  body <- queryContent rdf versionURI
+  return (Page title' body)
 
 -- | Extract all 'Page's in the RDF store.
-extractAllPages :: RDF rdf => rdf -> Either ScalarError [Page]
-extractAllPages rdf = mapM getPage $ queryPages rdf
-  where getPage = versionFromPageURI rdf >=> extractPage rdf
+extractAllPages :: RDF rdf => rdf -> ScalarM (Map VersionURI Page)
+extractAllPages rdf = fmap (Map.fromList . catMaybes) . mapM getPage $ queryPages rdf
+  where getPage pageURI = do
+          versionURI <- versionFromPageURI rdf pageURI
+          do page <- extractPage rdf versionURI
+             return $ Just (versionURI, page)
+          `catchError` (return . const Nothing)
+
+-- | Takes a path target of the form "[versionUri]#index=[index]" and converts it to a
+-- 'PathComponent'
+parsePathTarget :: URI -> Maybe PathComponent
+parsePathTarget uri = do
+  let uri' = T.unpack uri
+      regResult :: Maybe (AllTextSubmatches [] String) = uri' =~~ ("([^#]+)#index=(\\d+)" :: String)
+  reg <- regResult
+  let matches = getAllTextSubmatches reg
+  guard $ length matches == 3
+  let [_, versionURI, index] = matches
+  return PathComponent { pathIndex = read index
+                       , pathVersionURI = mkVersionURI (T.pack versionURI)
+                       }
+
+bodyURItoPathID :: PathBodyURI -> PathID
+bodyURItoPathID uri = (mkPathID . maybe "" T.pack) (versionURItoResourceID vUri)
+  where vUri = mkVersionURI uri
+
+-- | Extract all 'Path's in the RDF store.
+extractAllPaths :: RDF rdf => rdf -> ScalarM (Map PathID Path)
+extractAllPaths rdf = do
+  let resourceToBody :: Map PathResourceURI PathBodyURI = Map.fromList . map subjectAndObject $ query rdf Nothing (Just pathHasBody) Nothing
+      resourceToTarget :: Map PathResourceURI PathTargetURI = Map.fromList . map subjectAndObject $ query rdf Nothing (Just pathHasTarget) Nothing
+      resourceToPathComponent :: Map PathResourceURI PathComponent = Map.mapMaybe parsePathTarget resourceToTarget
+      bodyAndPathComponents :: [(PathBodyURI, PathComponent)] = Map.elems $ Map.intersectionWith (,) resourceToBody resourceToPathComponent
+      pathIDtoBodyAndPathComponentList :: Map PathID [(PathBodyURI, PathComponent)] = Map.fromListWith (++) $ map ((bodyURItoPathID . fst) &&& (:[])) bodyAndPathComponents
+      pathIDtoPath :: Map PathID Path = Map.map (\xs@(x:_) -> mkVersionURI (fst x) : map pathVersionURI (sort (map snd xs))) pathIDtoBodyAndPathComponentList
+  return pathIDtoPath
