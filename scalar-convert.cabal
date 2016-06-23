@@ -27,6 +27,7 @@ library
                      , containers
                      , optparse-applicative
                      , data-default
+                     , transformers
                      , pandoc
                      , pandoc-types
   default-language:    Haskell2010

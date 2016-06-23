@@ -13,6 +13,7 @@ module Text.Scalar.Types ( URI
                          , PathTargetURI
                          , PathComponent(..)
                          , Page(..)
+                         , ScalarM
                          , Scalar(..)
                          , ScalarError(..)
                          , PageOrderStrategy(..)
@@ -63,6 +64,8 @@ data PageOrderStrategy = IndexPath
                        | Path URI
                        | None
                        deriving (Eq, Show)
+
+type ScalarM = Either ScalarError
 
 data ScalarOptions = ScalarOptions
   { orderPagesBy :: PageOrderStrategy

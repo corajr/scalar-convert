@@ -68,7 +68,7 @@ pathHasTarget :: Node
 pathHasTarget = UNode "oac:hasTarget"
 
 -- | Display an error if an object is not found.
-notFound :: String -> Maybe a -> Either ScalarError a
+notFound :: String -> Maybe a -> ScalarM a
 notFound errMsg maybeA =
   case maybeA of
     Just a -> Right a
@@ -79,7 +79,7 @@ queryPages :: RDF rdf => rdf -> [URI]
 queryPages rdf = map (fromUNode . subject) $ query rdf Nothing (Just rdfType) (Just composite)
 
 -- | Find the index page URI (of the form /index) or return an error.
-findIndex :: RDF rdf => rdf -> Either ScalarError URI
+findIndex :: RDF rdf => rdf -> ScalarM URI
 findIndex rdf = notFound err maybePage
   where pages = queryPages rdf
         f x = snd $ T.breakOnEnd "/" x
@@ -87,7 +87,7 @@ findIndex rdf = notFound err maybePage
         err = "Could not find index in " ++ show pages
 
 -- | Get the corresponding live version for each page 'URI'.
-versionFromPageURI :: RDF rdf => rdf -> URI -> Either ScalarError VersionURI
+versionFromPageURI :: RDF rdf => rdf -> URI -> ScalarM VersionURI
 versionFromPageURI rdf pageURI = notFound err . fmap (mkVersionURI . fromUNode . object) . listToMaybe $ query rdf (Just (UNode pageURI)) (Just version) Nothing
   where err = show pageURI ++ " has no corresponding versions."
 
@@ -102,28 +102,28 @@ versionURItoResourceID vUri = do
   return resourceID
 
 -- | Extract the text of the object of a predicate from the page version at 'VersionURI'.
-queryPageTextObject :: RDF rdf => Node -> rdf -> VersionURI -> Either ScalarError T.Text
+queryPageTextObject :: RDF rdf => Node -> rdf -> VersionURI -> ScalarM T.Text
 queryPageTextObject rdfPred rdf vUri = notFound err . fmap (fromLNode . object) . listToMaybe $ attrs
   where attrs = query rdf (Just (UNode (unVersionURI vUri))) (Just rdfPred) Nothing
         err = show vUri ++ " has no predicate " ++ show rdfPred ++ "."
 
 -- | Extract the content from the page version at 'VersionURI'.
-queryContent :: RDF rdf => rdf -> VersionURI -> Either ScalarError T.Text
+queryContent :: RDF rdf => rdf -> VersionURI -> ScalarM T.Text
 queryContent = queryPageTextObject content
 
 -- | Extract the title from the page version at 'VersionURI'.
-queryTitle :: RDF rdf => rdf -> VersionURI -> Either ScalarError T.Text
+queryTitle :: RDF rdf => rdf -> VersionURI -> ScalarM T.Text
 queryTitle = queryPageTextObject title
 
 -- | Extract a full 'Page' given the 'VersionURI'.
-extractPage :: RDF rdf => rdf -> VersionURI -> Either ScalarError Page
+extractPage :: RDF rdf => rdf -> VersionURI -> ScalarM Page
 extractPage rdf versionURI = do
   title' <- queryTitle rdf versionURI
   body <- queryContent rdf versionURI
   return (Page title' body)
 
 -- | Extract all 'Page's in the RDF store.
-extractAllPages :: RDF rdf => rdf -> Either ScalarError (Map VersionURI Page)
+extractAllPages :: RDF rdf => rdf -> ScalarM (Map VersionURI Page)
 extractAllPages rdf = fmap (Map.fromList) . mapM getPage $ queryPages rdf
   where getPage pageURI = do
           versionURI <- versionFromPageURI rdf pageURI
@@ -146,7 +146,7 @@ parsePathTarget uri = do
                          }
 
 -- | Extract all 'Path's in the RDF store.
-extractAllPaths :: RDF rdf => rdf -> Either ScalarError (Map PathID Path)
+extractAllPaths :: RDF rdf => rdf -> ScalarM (Map PathID Path)
 extractAllPaths rdf = do
   let resourceToBody :: Map PathResourceURI PathBodyURI = Map.fromList . map subjectAndObject $ query rdf Nothing (Just pathHasBody) Nothing
       resourceToTarget :: Map PathResourceURI PathTargetURI = Map.fromList . map subjectAndObject $ query rdf Nothing (Just pathHasTarget) Nothing

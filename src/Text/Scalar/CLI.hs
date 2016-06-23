@@ -38,7 +38,7 @@ run (CliArgs {inputFile, maybePath}) = do
       _ -> hPrint stderr err
     Right doc -> putStrLn $ writeJSON def doc
 
-parseStdin :: ScalarOptions -> IO (Either ScalarError Pandoc)
+parseStdin :: ScalarOptions -> IO (ScalarM Pandoc)
 parseStdin opts = getContents >>= return . readScalar def opts
 
 main :: IO ()

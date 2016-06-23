@@ -30,14 +30,14 @@ type InlineTransform = Scalar -> Inline -> Inline
 readScalar :: ReaderOptions -- ^ Pandoc HTML reader options
            -> ScalarOptions -- ^ Scalar options
            -> String        -- ^ String to parse (assuming @'\n'@ line endings)
-           -> Either ScalarError Pandoc
+           -> ScalarM Pandoc
 readScalar rOpts sOpts s = do
   rdf <- readScalarString s
   scalar <- parseScalar rdf sOpts
   scalarToPandoc rOpts scalar
 
 -- | Read Scalar RDF/XML from a file and return a Pandoc document.
-readAndParseScalarFile :: FilePath -> ScalarOptions -> IO (Either ScalarError Pandoc)
+readAndParseScalarFile :: FilePath -> ScalarOptions -> IO (ScalarM Pandoc)
 readAndParseScalarFile path opts = do
   rdf <- readScalarFile path
   let scalar = parseScalar rdf opts
@@ -46,7 +46,7 @@ readAndParseScalarFile path opts = do
     Right scalar' -> return (scalarToPandoc def scalar')
 
 -- | Convert a 'Scalar' to 'Pandoc', or return the error.
-scalarToPandoc :: ReaderOptions -> Scalar -> Either ScalarError Pandoc
+scalarToPandoc :: ReaderOptions -> Scalar -> ScalarM Pandoc
 scalarToPandoc opts scalar = do
   pages <- orderPages scalar
   doc' <- go (Right (Pandoc nullMeta [])) pages
@@ -58,7 +58,7 @@ scalarToPandoc opts scalar = do
           Right pageBlocks -> go (Right (Pandoc meta (blocks ++ pageBlocks))) xs
 
 -- | Convert a 'Page' to a list of Pandoc 'Block's.
-pageToBlocks :: ReaderOptions -> Page -> Either ScalarError [Block]
+pageToBlocks :: ReaderOptions -> Page -> ScalarM [Block]
 pageToBlocks opts (Page { pageTitle, pageContent }) = do
   (Pandoc _ blocks) <- liftPandoc $ readHtml opts (T.unpack pageContent)
   return $ (toList (header 1 (text (T.unpack pageTitle)))) <> blocks
@@ -92,6 +92,6 @@ applyInlineTransforms scalar start = foldl' f start transforms
   where f acc x = walk (x scalar) acc
         transforms = selectInlineTransforms scalar
 
-liftPandoc :: Either PandocError a -> Either ScalarError a
+liftPandoc :: Either PandocError a -> ScalarM a
 liftPandoc (Left err) = Left (FromPandoc err)
 liftPandoc (Right x) = Right x
