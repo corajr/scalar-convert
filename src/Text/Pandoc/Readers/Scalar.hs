@@ -22,7 +22,7 @@ import qualified Data.Map as Map
 import qualified Data.Text as T
 
 import Text.Scalar
-import Text.Scalar.RDF (versionURItoResourceID)
+import Text.Scalar.RDF (versionURItoResourceID, annotationURLtoResourceID)
 
 import Control.Monad.Except
 
@@ -78,6 +78,26 @@ notesTransform scalar original@(Span ("",["note"],[("rev","scalar:has_note"),("r
         f [] = original
 notesTransform _ x = x
 
+-- | Changes annotations to footnotes containing the body of the annotation.
+annotationTransform :: Scalar -> Inline -> Inline
+annotationTransform scalar original@(Link ("",classes,[]) inlines (annotationURL,""))
+  | '#' `elem` annotationURL =  fromMaybe original $ do
+      blocks <- maybeBlocks
+      if classes == ["inline"]
+        then return $ Span nullAttr [Str preFragmentURL, Note blocks]
+        else return $ Span nullAttr (inlines ++ [Note blocks])
+  | otherwise = original
+  where preFragmentURL = takeWhile (/= '#') annotationURL
+        maybeResource = annotationURLtoResourceID annotationURL
+        maybeBlocks = maybeResource >>= pageContentByResourceID def scalar
+annotationTransform _ x = x
+
+-- | Adds the URL to the text of inline media links so that the link isn't blank.
+inlineMediaTransform :: Scalar -> Inline -> Inline
+inlineMediaTransform _ (Link ("",["inline"],[]) [] (mediaURL,"")) =
+  Link ("",["inline"],[]) [Str mediaURL] (mediaURL, "")
+inlineMediaTransform _ x = x
+
 -- | Applies all selected transforms at the inline and block level.
 applyTransforms :: Scalar -> Pandoc -> Pandoc
 applyTransforms = applyInlineTransforms
@@ -86,6 +106,8 @@ applyTransforms = applyInlineTransforms
 selectInlineTransforms :: Scalar -> [InlineTransform]
 selectInlineTransforms _ =
   [ notesTransform
+  , annotationTransform
+  , inlineMediaTransform
   ]
 
 -- | Applies inline transformations (such as notes).

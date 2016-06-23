@@ -3,6 +3,7 @@
 module Text.Scalar.RDF ( queryPages
                        , versionFromPageURI
                        , versionURItoResourceID
+                       , annotationURLtoResourceID
                        , bodyURItoPathID
                        , queryContent
                        , queryTitle
@@ -99,16 +100,23 @@ versionFromPageURI :: RDF rdf => rdf -> URI -> ScalarM VersionURI
 versionFromPageURI rdf pageURI = notFound err . fmap (mkVersionURI . fromUNode . object) . listToMaybe $ query rdf (Just (UNode pageURI)) (Just version) Nothing
   where err = show pageURI ++ " has no corresponding versions."
 
--- | Turn a 'VersionURI' into an identifier, e.g. "version.1" -> "version"
-versionURItoResourceID :: VersionURI -> Maybe String
-versionURItoResourceID vUri = do
-  let uri = T.unpack (unVersionURI vUri)
-      regResult :: Maybe (AllTextSubmatches [] String) = uri =~~ ("/([^./]+?)\\.\\d+$" :: String)
+-- | Extract a single field from a URI string by regex
+getSingleFieldFromString :: String -> String -> Maybe String
+getSingleFieldFromString regex input = do
+  let regResult :: Maybe (AllTextSubmatches [] String) = input =~~ regex
   reg <- regResult
   let matches = getAllTextSubmatches reg
   guard $ length matches == 2
-  let [_, resourceID] = matches
-  return resourceID
+  let [_, field] = matches
+  return field
+
+-- | Turn a 'VersionURI' into an identifier, e.g. "http://scalar.usc.edu/works/work/version.1" -> "version"
+versionURItoResourceID :: VersionURI -> Maybe String
+versionURItoResourceID = getSingleFieldFromString "/([^./]+?)\\.\\d+$" . T.unpack . unVersionURI
+
+-- | Turn an annotation URL into an identifier, e.g. "http://vimeo.com/12345#annotation" -> "annotation"
+annotationURLtoResourceID :: String -> Maybe String
+annotationURLtoResourceID = getSingleFieldFromString "/[^./]+?#(.+)$"
 
 -- | Extract the text of the object of a predicate from the page version at 'VersionURI'.
 queryPageTextObject :: RDF rdf => Node -> rdf -> VersionURI -> ScalarM T.Text

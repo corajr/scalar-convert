@@ -38,6 +38,9 @@ spec = do
   describe "versionURItoResourceID" $ do
     it "returns the resource ID for the URI" $
       versionURItoResourceID singlePageVersionURI `shouldBe` Just "index"
+  describe "annotationURLtoResourceID" $ do
+    it "returns the resource ID for annotated media URL" $
+      annotationURLtoResourceID "http://vimeo.com/12345#annotation-on-media" `shouldBe` Just "annotation-on-media"
   describe "queryTitle" $ do
     it "obtains the page title from the VersionURI" $
       queryTitle singlePage singlePageVersionURI `shouldBeScalar` Right "Introduction"
