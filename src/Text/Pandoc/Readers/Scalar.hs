@@ -58,18 +58,24 @@ pageToBlocks opts Page { pageTitle, pageContent } = do
   (Pandoc _ blocks) <- liftPandoc $ readHtml opts (T.unpack pageContent)
   return $ toList (header 1 (text (T.unpack pageTitle))) <> blocks
 
+-- | Returns 'Just' the pandoc content of another page (such as a note or
+-- annotation), or 'Nothing'.
+pageContentByResourceID :: ReaderOptions -> Scalar -> String -> Maybe [Block]
+pageContentByResourceID opts Scalar { scalarPages } resourceID = do
+  page <- Map.lookup resourceID pageIndex
+  let (eitherBlocks, _) = runScalarM $ pageToBlocks opts page
+  case eitherBlocks of
+    Left err -> traceShow err Nothing
+    Right blocks -> Just blocks
+  where pageIndex = Map.mapKeys (fromMaybe "" . versionURItoResourceID) scalarPages
+
 -- | Transform Scalar's notes spans into Pandoc 'Note'
 notesTransform :: Scalar -> Inline -> Inline
-notesTransform Scalar { scalarPages } original@(Span ("",["note"],[("rev","scalar:has_note"),("resource",resourceID)]) inlines) =
-  fromMaybe original otherPage
-  where pageIndex = Map.mapKeys (fromMaybe "" . versionURItoResourceID) scalarPages
-        otherPage = do
-          page <- Map.lookup resourceID pageIndex
-          let (eitherBlocks, _) = runScalarM $ pageToBlocks def page
-          case eitherBlocks of
-            Left err -> traceShow err Nothing
-            Right (_:blocks) -> return $ Span nullAttr (inlines ++ [Note blocks])
-            Right [] -> Nothing
+notesTransform scalar original@(Span ("",["note"],[("rev","scalar:has_note"),("resource",resourceID)]) inlines) =
+  maybe original f otherPage
+  where otherPage = pageContentByResourceID def scalar resourceID
+        f (_:blocks) = Span nullAttr (inlines ++ [Note blocks])
+        f [] = original
 notesTransform _ x = x
 
 -- | Applies all selected transforms at the inline and block level.
