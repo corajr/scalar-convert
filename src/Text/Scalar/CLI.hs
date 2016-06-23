@@ -30,7 +30,7 @@ cliArgs = CliArgs
   <*> argument str (metavar "INPUT")
 
 run :: CliArgs -> IO ()
-run (CliArgs {inputFile, maybePath, warnings}) = do
+run CliArgs {inputFile, maybePath, warnings} = do
   let orderBy = case maybePath of
         Just path -> Path $ T.pack path
         Nothing -> IndexPath
@@ -48,7 +48,7 @@ run (CliArgs {inputFile, maybePath, warnings}) = do
     Right doc -> putStrLn $ writeJSON def doc
 
 parseStdin :: ScalarOptions -> IO (ScalarM Pandoc)
-parseStdin opts = getContents >>= return . readScalar def opts
+parseStdin opts = fmap (readScalar def opts) getContents
 
 main :: IO ()
 main = execParser opts >>= run

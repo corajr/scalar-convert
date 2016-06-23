@@ -25,7 +25,6 @@ import Text.Scalar
 import Text.Scalar.RDF (versionURItoResourceID)
 
 import Control.Monad.Except
-import Control.Monad.Writer.Strict
 
 type InlineTransform = Scalar -> Inline -> Inline
 
@@ -50,18 +49,18 @@ scalarToPandoc :: ReaderOptions -> Scalar -> ScalarM Pandoc
 scalarToPandoc opts scalar = do
   pages <- orderPages scalar
   blocks <- mapM (pageToBlocks opts) pages
-  let doc = Pandoc nullMeta (concat blocks)
-  return $ applyTransforms scalar doc
+  let doc' = Pandoc nullMeta (concat blocks)
+  return $ applyTransforms scalar doc'
 
 -- | Convert a 'Page' to a list of Pandoc 'Block's.
 pageToBlocks :: ReaderOptions -> Page -> ScalarM [Block]
-pageToBlocks opts (Page { pageTitle, pageContent }) = do
+pageToBlocks opts Page { pageTitle, pageContent } = do
   (Pandoc _ blocks) <- liftPandoc $ readHtml opts (T.unpack pageContent)
-  return $ (toList (header 1 (text (T.unpack pageTitle)))) <> blocks
+  return $ toList (header 1 (text (T.unpack pageTitle))) <> blocks
 
 -- | Transform Scalar's notes spans into Pandoc 'Note'
 notesTransform :: Scalar -> Inline -> Inline
-notesTransform (Scalar { scalarPages }) original@(Span ("",["note"],[("rev","scalar:has_note"),("resource",resourceID)]) inlines) =
+notesTransform Scalar { scalarPages } original@(Span ("",["note"],[("rev","scalar:has_note"),("resource",resourceID)]) inlines) =
   fromMaybe original otherPage
   where pageIndex = Map.mapKeys (fromMaybe "" . versionURItoResourceID) scalarPages
         otherPage = do
@@ -69,7 +68,7 @@ notesTransform (Scalar { scalarPages }) original@(Span ("",["note"],[("rev","sca
           let (eitherBlocks, _) = runScalarM $ pageToBlocks def page
           case eitherBlocks of
             Left err -> traceShow err Nothing
-            Right (_:blocks) -> return $ (Span nullAttr $ inlines ++ [Note blocks])
+            Right (_:blocks) -> return $ Span nullAttr (inlines ++ [Note blocks])
             Right [] -> Nothing
 notesTransform _ x = x
 

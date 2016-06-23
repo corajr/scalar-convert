@@ -7,9 +7,7 @@ module Text.Scalar ( module Text.Scalar.Types
                    , orderPages
                    ) where
 
-import Control.Arrow (left)
-
-import Data.Maybe (fromMaybe, mapMaybe)
+import Data.Maybe (mapMaybe)
 import Data.RDF
 import qualified Data.Map as Map
 import qualified Data.Text as T
@@ -18,7 +16,6 @@ import Text.Scalar.RDF
 import Text.Scalar.Types
 
 import Control.Monad.Except
-import Control.Monad.Writer
 
 -- | Reads a Scalar RDF/XML string into in-memory RDF.
 readScalarString :: String -> ScalarM ScalarRDF
@@ -40,7 +37,7 @@ parseScalar rdf opts = do
 -- | Collects the 'Page's into a list according to the 'PageOrderStrategy',
 -- or returns an error
 orderPages :: Scalar -> ScalarM [Page]
-orderPages scalar@(Scalar { scalarOptions, scalarPages }) =
+orderPages scalar@Scalar { scalarOptions, scalarPages } =
   case orderPagesBy scalarOptions of
     IndexPath -> getPath scalar (mkPathID "index")
     Path s -> getPath scalar (mkPathID s)
@@ -48,10 +45,10 @@ orderPages scalar@(Scalar { scalarOptions, scalarPages }) =
 
 -- | Attempts to get the specified 'PathID' or returns an error.
 getPath :: Scalar -> PathID -> ScalarM [Page]
-getPath (Scalar { scalarPaths, scalarPages }) path =
+getPath Scalar { scalarPaths, scalarPages } path =
   maybe (throwError (ScalarError err)) return pathResult
   where pathResult = do
           path' <- Map.lookup path scalarPaths
-          return $ mapMaybe ((flip Map.lookup) scalarPages) path'
+          return $ mapMaybe (`Map.lookup` scalarPages) path'
         err = "Could not find path " ++ show (unPathID path) ++ ". Available paths are:\n" ++
               concatMap ((\xs -> "- " ++ xs ++ "\n") . T.unpack . unPathID) (Map.keys scalarPaths)

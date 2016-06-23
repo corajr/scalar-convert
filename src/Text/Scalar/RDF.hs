@@ -133,7 +133,7 @@ extractPage rdf versionURI = do
 
 -- | Extract all 'Page's in the RDF store.
 extractAllPages :: RDF rdf => rdf -> ScalarM (Map VersionURI Page)
-extractAllPages rdf = fmap (Map.fromList . catMaybes) . mapM (getPage) $ queryPages rdf
+extractAllPages rdf = fmap (Map.fromList . catMaybes) . mapM getPage $ queryPages rdf
   where getPage pageURI = do
           versionURI <- versionFromPageURI rdf pageURI
           do page <- extractPage rdf versionURI
