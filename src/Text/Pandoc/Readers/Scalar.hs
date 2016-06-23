@@ -24,6 +24,9 @@ import qualified Data.Text as T
 import Text.Scalar
 import Text.Scalar.RDF (versionURItoResourceID)
 
+import Control.Monad.Except
+import Control.Monad.Writer.Strict
+
 type InlineTransform = Scalar -> Inline -> Inline
 
 -- | Read Scalar RDF/XML from an input string and return a Pandoc document.
@@ -40,22 +43,15 @@ readScalar rOpts sOpts s = do
 readAndParseScalarFile :: FilePath -> ScalarOptions -> IO (ScalarM Pandoc)
 readAndParseScalarFile path opts = do
   rdf <- readScalarFile path
-  let scalar = parseScalar rdf opts
-  case scalar of
-    Left err -> return (Left err)
-    Right scalar' -> return (scalarToPandoc def scalar')
+  return $ parseScalar rdf opts >>= scalarToPandoc def
 
 -- | Convert a 'Scalar' to 'Pandoc', or return the error.
 scalarToPandoc :: ReaderOptions -> Scalar -> ScalarM Pandoc
 scalarToPandoc opts scalar = do
   pages <- orderPages scalar
-  doc' <- go (Right (Pandoc nullMeta [])) pages
-  return $ applyTransforms scalar doc'
-  where go err@(Left _) _ = err
-        go doc'@(Right (Pandoc _ _)) [] = doc'
-        go (Right (Pandoc meta blocks)) (x:xs) = case pageToBlocks opts x of
-          Left err -> Left err
-          Right pageBlocks -> go (Right (Pandoc meta (blocks ++ pageBlocks))) xs
+  blocks <- mapM (pageToBlocks opts) pages
+  let doc = Pandoc nullMeta (concat blocks)
+  return $ applyTransforms scalar doc
 
 -- | Convert a 'Page' to a list of Pandoc 'Block's.
 pageToBlocks :: ReaderOptions -> Page -> ScalarM [Block]
@@ -70,7 +66,8 @@ notesTransform (Scalar { scalarPages }) original@(Span ("",["note"],[("rev","sca
   where pageIndex = Map.mapKeys (fromMaybe "" . versionURItoResourceID) scalarPages
         otherPage = do
           page <- Map.lookup resourceID pageIndex
-          case pageToBlocks def page of
+          let (eitherBlocks, _) = runScalarM $ pageToBlocks def page
+          case eitherBlocks of
             Left err -> traceShow err Nothing
             Right (_:blocks) -> return $ (Span nullAttr $ inlines ++ [Note blocks])
             Right [] -> Nothing
@@ -93,5 +90,5 @@ applyInlineTransforms scalar start = foldl' f start transforms
         transforms = selectInlineTransforms scalar
 
 liftPandoc :: Either PandocError a -> ScalarM a
-liftPandoc (Left err) = Left (FromPandoc err)
-liftPandoc (Right x) = Right x
+liftPandoc (Left err) = throwError (FromPandoc err)
+liftPandoc (Right x) = return x

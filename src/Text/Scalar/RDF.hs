@@ -22,10 +22,12 @@ import qualified Data.Text as T
 import Text.Regex.PCRE
 import Text.Scalar.Types
 
-import Data.Maybe (listToMaybe)
+import Data.Maybe (listToMaybe, catMaybes)
 
 import Control.Arrow ((&&&))
-import Control.Monad (guard)
+
+import Control.Monad.Except
+import Control.Monad.Writer
 
 type ScalarRDF = HashMapS
 
@@ -36,7 +38,12 @@ object :: Triple -> Object
 object (Triple _ _ x) = x
 
 subjectAndObject :: Triple -> (URI, URI)
-subjectAndObject = (fromUNode . subject) &&& (fromUNode . object)
+subjectAndObject = (textFromNode . subject) &&& (textFromNode . object)
+
+textFromNode :: Node -> T.Text
+textFromNode (UNode x) = x
+textFromNode (LNode (PlainL x)) = x
+textFromNode err = error $ "Don't know how to parse node " ++ show err
 
 fromUNode :: Node -> URI
 fromUNode (UNode x) = x
@@ -71,8 +78,8 @@ pathHasTarget = UNode "oac:hasTarget"
 notFound :: String -> Maybe a -> ScalarM a
 notFound errMsg maybeA =
   case maybeA of
-    Just a -> Right a
-    Nothing -> Left (ScalarError errMsg)
+    Just a -> return a
+    Nothing -> tell errMsg >> throwError (ScalarError errMsg)
 
 -- | Find all page URIs in 'RDF'.
 queryPages :: RDF rdf => rdf -> [URI]
@@ -91,6 +98,7 @@ versionFromPageURI :: RDF rdf => rdf -> URI -> ScalarM VersionURI
 versionFromPageURI rdf pageURI = notFound err . fmap (mkVersionURI . fromUNode . object) . listToMaybe $ query rdf (Just (UNode pageURI)) (Just version) Nothing
   where err = show pageURI ++ " has no corresponding versions."
 
+-- | Turn a 'VersionURI' into an identifier, e.g. "version.1" -> "version"
 versionURItoResourceID :: VersionURI -> Maybe String
 versionURItoResourceID vUri = do
   let uri = T.unpack (unVersionURI vUri)
@@ -105,7 +113,7 @@ versionURItoResourceID vUri = do
 queryPageTextObject :: RDF rdf => Node -> rdf -> VersionURI -> ScalarM T.Text
 queryPageTextObject rdfPred rdf vUri = notFound err . fmap (fromLNode . object) . listToMaybe $ attrs
   where attrs = query rdf (Just (UNode (unVersionURI vUri))) (Just rdfPred) Nothing
-        err = show vUri ++ " has no predicate " ++ show rdfPred ++ "."
+        err = show vUri ++ " has no predicate " ++ show rdfPred ++ ".\n"
 
 -- | Extract the content from the page version at 'VersionURI'.
 queryContent :: RDF rdf => rdf -> VersionURI -> ScalarM T.Text
@@ -124,11 +132,12 @@ extractPage rdf versionURI = do
 
 -- | Extract all 'Page's in the RDF store.
 extractAllPages :: RDF rdf => rdf -> ScalarM (Map VersionURI Page)
-extractAllPages rdf = fmap (Map.fromList) . mapM getPage $ queryPages rdf
+extractAllPages rdf = fmap (Map.fromList . catMaybes) . mapM (getPage) $ queryPages rdf
   where getPage pageURI = do
           versionURI <- versionFromPageURI rdf pageURI
-          page <- extractPage rdf versionURI
-          return (versionURI, page)
+          do page <- extractPage rdf versionURI
+             return $ Just (versionURI, page)
+          `catchError` (return . const Nothing)
 
 -- | Takes a path of the form "[versionUri]#[pathID]=[index]" and converts it to a
 -- 'PathComponent'
@@ -154,4 +163,4 @@ extractAllPaths rdf = do
       bodyAndPathComponents :: [(PathBodyURI, PathComponent)] = Map.elems $ Map.intersectionWith (,) resourceToBody resourceToPathComponent
       pathIDtoBodyAndPathComponentList :: Map PathID [(PathBodyURI, PathComponent)] = Map.fromListWith (++) $ map ((pathID . snd) &&& (:[])) bodyAndPathComponents
       pathIDtoPath :: Map PathID Path = Map.map (\xs@(x:_) -> mkVersionURI (fst x) : map pathVersionURI (sort (map snd xs))) pathIDtoBodyAndPathComponentList
-  Right pathIDtoPath
+  return pathIDtoPath

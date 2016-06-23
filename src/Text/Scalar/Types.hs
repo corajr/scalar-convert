@@ -14,6 +14,7 @@ module Text.Scalar.Types ( URI
                          , PathComponent(..)
                          , Page(..)
                          , ScalarM
+                         , runScalarM
                          , Scalar(..)
                          , ScalarError(..)
                          , PageOrderStrategy(..)
@@ -25,6 +26,9 @@ import Data.RDF (ParseFailure)
 
 import Data.Default
 import Data.Map (Map)
+
+import Control.Monad.Except
+import Control.Monad.Writer.Strict
 
 import qualified Data.Text as T
 
@@ -65,7 +69,7 @@ data PageOrderStrategy = IndexPath
                        | None
                        deriving (Eq, Show)
 
-type ScalarM = Either ScalarError
+type ScalarM = ExceptT ScalarError (Writer String)
 
 data ScalarOptions = ScalarOptions
   { orderPagesBy :: PageOrderStrategy
@@ -87,3 +91,6 @@ data Scalar = Scalar
   , scalarPaths :: Map PathID Path
   , scalarPages :: Map VersionURI Page
   } deriving (Eq, Show)
+
+runScalarM :: ScalarM a -> (Either ScalarError a, String)
+runScalarM = runWriter . runExceptT

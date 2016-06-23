@@ -17,9 +17,14 @@ import qualified Data.Text as T
 import Text.Scalar.RDF
 import Text.Scalar.Types
 
+import Control.Monad.Except
+import Control.Monad.Writer
+
 -- | Reads a Scalar RDF/XML string into in-memory RDF.
 readScalarString :: String -> ScalarM ScalarRDF
-readScalarString = left RdfError . parseString (XmlParser Nothing Nothing) . T.pack
+readScalarString s = case parseString (XmlParser Nothing Nothing) (T.pack s) of
+  Left err -> throwError (RdfError err)
+  Right rdf -> return rdf
 
 -- | Reads a Scalar RDF/XML file into in-memory RDF.
 readScalarFile :: String -> IO ScalarRDF
@@ -44,7 +49,7 @@ orderPages scalar@(Scalar { scalarOptions, scalarPages }) =
 -- | Attempts to get the specified 'PathID' or returns an error.
 getPath :: Scalar -> PathID -> ScalarM [Page]
 getPath (Scalar { scalarPaths, scalarPages }) path =
-  maybe (Left (ScalarError err)) Right pathResult
+  maybe (throwError (ScalarError err)) return pathResult
   where pathResult = do
           path' <- Map.lookup path scalarPaths
           return $ mapMaybe ((flip Map.lookup) scalarPages) path'

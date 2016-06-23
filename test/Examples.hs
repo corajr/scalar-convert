@@ -14,6 +14,8 @@ import Text.Pandoc.Definition
 import Data.Default (def)
 import Text.Scalar
 
+import Test.Hspec (Expectation, shouldBe, shouldSatisfy)
+
 examples :: [(FilePath, BS.ByteString)]
 examples = $(embedDir "test/examples")
 
@@ -79,11 +81,17 @@ singlePageVersionURI = mkVersionURI $ indexURI `mappend` ".1"
 
 fullBookRdf :: HashMapS
 fullBookRdf =
-  case readScalarString (getExample "full_book.xml") of
+  case fst (runScalarM (readScalarString (getExample "full_book.xml"))) of
     Left err -> error (show err)
     Right x -> x
 
 fullBookScalar :: Scalar
-fullBookScalar = case parseScalar fullBookRdf def of
-  Left err -> error (show err)
-  Right x -> x
+fullBookScalar = case runScalarM (parseScalar fullBookRdf def) of
+  (Left err, _) -> error (show err)
+  (Right x, _) -> x
+
+shouldBeScalar :: (Eq a, Show a) => ScalarM a -> Either ScalarError a -> Expectation
+action `shouldBeScalar` result = fst (runScalarM action) `shouldBe` result
+
+shouldSatisfyScalar :: (Show a) => ScalarM a -> (Either ScalarError a -> Bool) -> Expectation
+action `shouldSatisfyScalar` predicate = fst (runScalarM action) `shouldSatisfy` predicate

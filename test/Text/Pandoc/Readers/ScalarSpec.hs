@@ -49,12 +49,12 @@ spec = do
       notesTransform noteScalar noteSpan `shouldBe` processedNoteSpan
   describe "pageToBlocks" $ do
     it "takes a 'Page' and returns Right '[Block]'" $
-      pageToBlocks def singlePageScalarPage `shouldBe` Right (singlePageTitle : singlePageContentPandoc)
+      pageToBlocks def singlePageScalarPage `shouldBeScalar` Right (singlePageTitle : singlePageContentPandoc)
   describe "scalarToPandoc" $ do
     it "takes a 'Scalar' book and returns 'Pandoc'" $ do
-      scalarToPandoc def singlePageScalar { scalarOptions = def { orderPagesBy = None }} `shouldBe` Right singlePagePandoc
+      scalarToPandoc def singlePageScalar { scalarOptions = def { orderPagesBy = None }} `shouldBeScalar` Right singlePagePandoc
   describe "readScalar" $ do
     it "parses a Scalar RDF/XML string into Right 'Pandoc'" $
-      readScalar def def {orderPagesBy = None } (getExample "single_page.xml") `shouldBe` Right singlePagePandoc
+      readScalar def def {orderPagesBy = None } (getExample "single_page.xml") `shouldBeScalar` Right singlePagePandoc
     it "parses a complex Scalar RDF/XML string into Right 'Pandoc'" $
-      readScalar def def (getExample "full_book.xml") `shouldSatisfy` isRight
+      readScalar def def (getExample "full_book.xml") `shouldSatisfyScalar` isRight
