@@ -83,19 +83,27 @@ annotationTransform :: Scalar -> Inline -> Inline
 annotationTransform scalar original@(Link ("",classes,[]) inlines (annotationURL,""))
   | '#' `elem` annotationURL =  fromMaybe original $ do
       blocks <- maybeBlocks
-      if classes == ["inline"]
-        then return $ Span nullAttr [Str preFragmentURL, Note blocks]
-        else return $ Span nullAttr (inlines ++ [Note blocks])
+      let noteContents = Plain [preFragLink] : blocks
+      return $ Span nullAttr (inlines' ++ [Note noteContents])
   | otherwise = original
   where preFragmentURL = takeWhile (/= '#') annotationURL
+        preFragLink = Link ("",[],[]) [Str preFragmentURL] (preFragmentURL, "")
+        inlines' = if classes == ["inline"]
+                   then [inlineMediaLink preFragmentURL]
+                   else inlines
         maybeResource = annotationURLtoResourceID annotationURL
         maybeBlocks = maybeResource >>= pageContentByResourceID def scalar
 annotationTransform _ x = x
 
+-- | Makes an inline media link from the media URL.
+inlineMediaLink :: String -> Inline
+inlineMediaLink mediaURL = head . toList $
+  spanWith nullAttr (text "[Media: " <> link mediaURL "" (text mediaURL) <> str "]")
+
 -- | Adds the URL to the text of inline media links so that the link isn't blank.
 inlineMediaTransform :: Scalar -> Inline -> Inline
 inlineMediaTransform _ (Link ("",["inline"],[]) [] (mediaURL,"")) =
-  Link ("",["inline"],[]) [Str mediaURL] (mediaURL, "")
+  inlineMediaLink mediaURL
 inlineMediaTransform _ x = x
 
 -- | Applies all selected transforms at the inline and block level.
