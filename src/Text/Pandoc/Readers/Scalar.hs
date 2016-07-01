@@ -4,6 +4,7 @@ module Text.Pandoc.Readers.Scalar ( readScalar
                                   , readAndParseScalarFile
                                   , scalarToPandoc
                                   , pageToBlocks
+                                  , preprocessHTML
                                   , applyTransforms
                                   , selectInlineTransforms
                                   , applyInlineTransforms
@@ -15,7 +16,10 @@ import Text.Pandoc.Walk
 import Text.Pandoc.Options
 
 import Text.Pandoc.Readers.HTML
-import Data.List (foldl')
+import Text.HTML.TagSoup
+import Text.HTML.TagSoup.Tree
+
+import Data.List (foldl', find)
 import Data.Maybe (fromMaybe)
 import Debug.Trace (traceShow)
 import qualified Data.Map as Map
@@ -56,7 +60,7 @@ scalarToPandoc opts scalar = do
 -- | Convert a 'Page' to a list of Pandoc 'Block's.
 pageToBlocks :: ReaderOptions -> Page -> ScalarM [Block]
 pageToBlocks opts Page { pageTitle, pageContent } = do
-  let content = "<h1>" <> pageTitle <> "</h1>" <> pageContent
+  let content = "<h1>" <> pageTitle <> "</h1>" <> preprocessHTML pageContent
   (Pandoc _ blocks) <- liftPandoc $ readHtml opts (T.unpack content)
   return blocks
 
@@ -70,6 +74,21 @@ pageContentByResourceID opts Scalar { scalarPages } resourceID = do
     Left err -> traceShow err Nothing
     Right blocks -> Just blocks
   where pageIndex = Map.mapKeys (fromMaybe "" . versionURItoResourceID) scalarPages
+
+-- | Alters HTML so that Scalar's data attributes are retained in the output.
+preprocessHTML :: T.Text -> T.Text
+preprocessHTML = renderTree . transformTree f . parseTree
+  where f (TagBranch "a" attrs inner) = [TagBranch "a" attrs' inner]
+          where attrs' = dataCaptionToTitle attrs
+        f x = [x]
+
+-- | Search for the "data-caption" attribute in a list, and cons it to the
+-- beginning as a "title" attribute if found.
+dataCaptionToTitle :: [Attribute T.Text] -> [Attribute T.Text]
+dataCaptionToTitle attrs = maybe attrs (: attrs) $ do
+  (_, caption) <- find ((== "data-caption"). fst) attrs
+  return ("title", caption)
+
 
 -- | Transform Scalar's notes spans into Pandoc 'Note'
 notesTransform :: Scalar -> Inline -> Inline

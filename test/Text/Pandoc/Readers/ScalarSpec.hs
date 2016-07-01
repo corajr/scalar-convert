@@ -12,6 +12,7 @@ import Text.Pandoc.Builder
 
 import Data.Either (isRight)
 import qualified Data.Map as Map
+import qualified Data.Text as T
 
 import Text.ScalarSpec (singlePageScalar)
 import Examples
@@ -42,8 +43,25 @@ noteScalar =
          , scalarOptions = def
          }
 
+mediaLinkHTML :: T.Text
+mediaLinkHTML = "<a resource=\"scalar-guided-tour\" data-size=\"small\" data-align=\"right\" data-caption=\"title-and-description\" href=\"https://vimeo.com/40487010\">linked</a>"
+
+processedMediaLinkHTML :: T.Text
+processedMediaLinkHTML = "<a title=\"title-and-description\" resource=\"scalar-guided-tour\" data-size=\"small\" data-align=\"right\" data-caption=\"title-and-description\" href=\"https://vimeo.com/40487010\">linked</a>"
+
+inlineMediaLinkHTML :: T.Text
+inlineMediaLinkHTML = "<a class=\"inline\" resource=\"scalar-guided-tour\" data-size=\"small\" data-align=\"right\" data-caption=\"title\" href=\"https://vimeo.com/40487010\">linked</a>"
+
+processedInlineMediaLinkHTML :: T.Text
+processedInlineMediaLinkHTML = "<a title=\"title\" class=\"inline\" resource=\"scalar-guided-tour\" data-size=\"small\" data-align=\"right\" data-caption=\"title\" href=\"https://vimeo.com/40487010\">linked</a>"
+
 spec :: Spec
 spec = do
+  describe "preprocessHTML" $ do
+    it "turns a link with data attributes into a link with title attribute" $
+      preprocessHTML mediaLinkHTML `shouldBe` processedMediaLinkHTML
+    it "retains existing classes on link" $
+      preprocessHTML inlineMediaLinkHTML `shouldBe` processedInlineMediaLinkHTML
   describe "notesTransform" $ do
     it "turns a span class='note' into a pandoc Note" $
       notesTransform noteScalar noteSpan `shouldBe` processedNoteSpan

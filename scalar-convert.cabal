@@ -27,6 +27,7 @@ library
                      , containers
                      , optparse-applicative
                      , data-default
+                     , tagsoup
                      , mtl
                      , transformers
                      , pandoc
